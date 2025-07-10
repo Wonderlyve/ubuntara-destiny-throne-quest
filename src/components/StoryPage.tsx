@@ -1,76 +1,93 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star } from 'lucide-react';
+import { ArrowLeft, Star, Crown } from 'lucide-react';
+import { useGame } from '@/contexts/GameContext';
 
-interface Choice {
-  id: number;
-  text: string;
-  consequence: string;
+interface StoryPageProps {
+  onBack: () => void;
 }
 
-interface StoryStep {
-  id: number;
-  title: string;
-  content: string;
-  image?: string;
-  choices: Choice[];
-  wisdom?: string;
-}
+const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
+  const { storyData, userProfile, currentNode, updateCurrentNode, updateUserProfile } = useGame();
+  const [isGameComplete, setIsGameComplete] = useState(false);
 
-const StoryPage = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [userStats, setUserStats] = useState({
-    savoir: 50,
-    force: 45,
-    charisme: 60,
-    esprit: 55,
-    fortune: 100
-  });
-
-  // Histoire d'exemple
-  const storySteps: StoryStep[] = [
-    {
-      id: 0,
-      title: "L'Appel du Destin",
-      content: "Au cœur de l'Afrique mystique, dans le royaume d'Ubuntara, un appel résonne dans ton esprit. Les anciens esprits te murmurent qu'aujourd'hui, le trône du pouvoir peut être tien. Mais le chemin vers la royauté est semé d'épreuves...",
-      choices: [
-        { id: 1, text: "Écouter attentivement les esprits", consequence: "+10 Esprit" },
-        { id: 2, text: "Se préparer physiquement au combat", consequence: "+10 Force" },
-        { id: 3, text: "Consulter les sages du village", consequence: "+10 Savoir" },
-        { id: 4, text: "Rassembler des alliés fidèles", consequence: "+10 Charisme" },
-        { id: 5, text: "Vérifier ses ressources", consequence: "+50 Fortune" },
-        { id: 6, text: "Méditer sur ses intentions", consequence: "+5 Esprit, +5 Savoir" },
-        { id: 7, text: "Ignorer l'appel et continuer sa route", consequence: "Aucun bonus" }
-      ],
-      wisdom: "La sagesse commence par l'écoute de son cœur et de ses ancêtres."
+  // Vérifier si le nœud actuel existe
+  const currentStoryNode = storyData.nodes[currentNode];
+  
+  useEffect(() => {
+    // Vérifier si le jeu est terminé (nœud sans choix)
+    if (currentStoryNode && currentStoryNode.choices.length === 0) {
+      setIsGameComplete(true);
     }
-  ];
+  }, [currentNode, currentStoryNode]);
 
-  const currentStoryStep = storySteps[currentStep];
-
-  const handleChoice = (choice: Choice) => {
+  const handleChoice = (choice: { text: string; next: string }) => {
     console.log(`Choix sélectionné: ${choice.text}`);
-    // Ici on appliquerait les conséquences sur les stats
-    // setUserStats(prev => ({ ...prev, ... }));
+    
+    // Mettre à jour les stats du joueur (exemple simple)
+    const updatedProfile = { ...userProfile };
+    const randomStat = ['savoir', 'force', 'charisme', 'esprit', 'fortune'][Math.floor(Math.random() * 5)] as keyof typeof userProfile.stats;
+    updatedProfile.stats[randomStat] += Math.floor(Math.random() * 3) + 1;
+    
+    // Enregistrer le choix
+    updatedProfile.daily_progress.choices_made.push(choice.text);
+    
+    // Marquer comme ayant joué aujourd'hui si on arrive à la fin
+    if (choice.next.startsWith('end_')) {
+      updatedProfile.has_played_today = true;
+    }
+    
+    updateUserProfile(updatedProfile);
+    updateCurrentNode(choice.next);
   };
+
+  const handleRestart = () => {
+    const resetProfile = { ...userProfile };
+    resetProfile.daily_progress.current_node = storyData.start;
+    resetProfile.daily_progress.choices_made = [];
+    resetProfile.has_played_today = false;
+    updateUserProfile(resetProfile);
+    updateCurrentNode(storyData.start);
+    setIsGameComplete(false);
+  };
+
+  const getStepNumber = (nodeId: string): number => {
+    if (nodeId.startsWith('end_')) return 21;
+    return parseInt(nodeId) || 0;
+  };
+
+  if (!currentStoryNode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-amber-800 mb-4">Erreur: Histoire non trouvée</p>
+          <Button onClick={onBack} className="bg-amber-600 hover:bg-amber-700">
+            Retour au menu
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4">
-      {/* Header avec retour */}
+      {/* Header */}
       <motion.div
         className="flex items-center justify-between mb-6"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Button variant="ghost" size="sm" className="text-amber-700">
+        <Button variant="ghost" size="sm" className="text-amber-700" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Retour
         </Button>
         <div className="flex items-center space-x-2">
           <Star className="h-5 w-5 text-amber-500" />
-          <span className="text-sm font-medium text-amber-700">Étape {currentStep + 1}</span>
+          <span className="text-sm font-medium text-amber-700">
+            Étape {getStepNumber(currentNode)}
+          </span>
         </div>
       </motion.div>
 
@@ -88,7 +105,7 @@ const StoryPage = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          {currentStoryStep.title}
+          {currentStoryNode.title}
         </motion.h1>
 
         {/* Contenu narratif */}
@@ -99,62 +116,80 @@ const StoryPage = () => {
           transition={{ delay: 0.5 }}
         >
           <p className="text-amber-800 leading-relaxed font-serif text-sm">
-            {currentStoryStep.content}
+            {currentStoryNode.text}
           </p>
         </motion.div>
 
-        {/* Choix disponibles */}
-        <motion.div
-          className="space-y-3"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-        >
-          <h3 className="text-lg font-semibold text-amber-700 mb-3 text-center">
-            Quel est ton choix ?
-          </h3>
-          
-          {currentStoryStep.choices.map((choice, index) => (
-            <motion.div
-              key={choice.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 + index * 0.1 }}
-            >
-              <Button
-                variant="outline"
-                className="w-full p-3 h-auto text-left bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border-amber-300 rounded-lg transition-all duration-300 hover:shadow-md"
-                onClick={() => handleChoice(choice)}
-              >
-                <div className="w-full">
-                  <div className="font-medium text-amber-800 text-sm mb-1">
-                    {choice.text}
-                  </div>
-                  <div className="text-xs text-amber-600 italic">
-                    → {choice.consequence}
-                  </div>
-                </div>
-              </Button>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Sagesse africaine */}
-        {currentStoryStep.wisdom && (
+        {/* Choix ou fin de jeu */}
+        {!isGameComplete && currentStoryNode.choices.length > 0 ? (
           <motion.div
-            className="mt-6 p-3 bg-gradient-to-r from-amber-200/50 to-orange-200/50 rounded-lg border border-amber-300"
+            className="space-y-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
+            transition={{ delay: 0.7 }}
           >
-            <p className="text-xs text-amber-700 italic text-center font-serif">
-              💡 {currentStoryStep.wisdom}
+            <h3 className="text-lg font-semibold text-amber-700 mb-3 text-center">
+              Quel est ton choix ?
+            </h3>
+            
+            {currentStoryNode.choices.map((choice, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+              >
+                <Button
+                  variant="outline"
+                  className="w-full p-3 h-auto text-left bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border-amber-300 rounded-lg transition-all duration-300 hover:shadow-md"
+                  onClick={() => handleChoice(choice)}
+                >
+                  <div className="w-full">
+                    <div className="font-medium text-amber-800 text-sm">
+                      {choice.text}
+                    </div>
+                  </div>
+                </Button>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          // Fin du jeu
+          <motion.div
+            className="text-center space-y-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+          >
+            <div className="flex justify-center mb-4">
+              <Crown className="h-12 w-12 text-amber-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-amber-700 mb-3">
+              Fin de l'aventure !
+            </h3>
+            <p className="text-amber-600 text-sm mb-4">
+              Ton destin a été scellé. L'histoire d'aujourd'hui est terminée.
             </p>
+            <div className="space-y-2">
+              <Button
+                onClick={handleRestart}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                Recommencer l'aventure
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onBack}
+                className="w-full border-amber-300 text-amber-700 hover:bg-amber-100"
+              >
+                Retour au menu
+              </Button>
+            </div>
           </motion.div>
         )}
       </motion.div>
 
-      {/* Stats du joueur en bas */}
+      {/* Stats du joueur */}
       <motion.div
         className="max-w-md mx-auto mt-6 bg-white/80 rounded-lg p-4 border border-amber-200"
         initial={{ opacity: 0, y: 20 }}
@@ -162,7 +197,7 @@ const StoryPage = () => {
         transition={{ delay: 1 }}
       >
         <div className="grid grid-cols-2 gap-3 text-xs">
-          {Object.entries(userStats).map(([stat, value]) => (
+          {Object.entries(userProfile.stats).map(([stat, value]) => (
             <div key={stat} className="flex justify-between items-center">
               <span className="capitalize text-amber-700 font-medium">{stat}:</span>
               <div className="flex items-center space-x-2">

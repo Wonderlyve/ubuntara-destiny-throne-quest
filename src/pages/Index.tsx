@@ -3,28 +3,87 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Crown, ShoppingBag, User, Scroll, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import StoryPage from '@/components/StoryPage';
+import KingPage from '@/components/KingPage';
+import ShopPage from '@/components/ShopPage';
+import CharacterPage from '@/components/CharacterPage';
+
+type CurrentPage = 'home' | 'story' | 'king' | 'shop' | 'character' | 'rules' | 'settings';
 
 const Index = () => {
   const [bookOpened, setBookOpened] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [currentPage, setCurrentPage] = useState<CurrentPage>('home');
 
   useEffect(() => {
-    // Animation d'ouverture automatique après 2 secondes
-    const timer = setTimeout(() => {
+    if (currentPage === 'home') {
+      // Animation d'ouverture automatique après 2 secondes
+      const timer = setTimeout(() => {
+        setBookOpened(true);
+        setTimeout(() => setShowMenu(true), 1000);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage]);
+
+  const handleNavigation = (page: CurrentPage) => {
+    setCurrentPage(page);
+    console.log(`Navigation vers: ${page}`);
+  };
+
+  const handleBackToHome = () => {
+    setCurrentPage('home');
+    setBookOpened(false);
+    setShowMenu(false);
+    // Relancer l'animation d'ouverture
+    setTimeout(() => {
       setBookOpened(true);
       setTimeout(() => setShowMenu(true), 1000);
-    }, 2000);
+    }, 100);
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  // Render des pages spécifiques
+  if (currentPage === 'story') {
+    return <StoryPage onBack={handleBackToHome} />;
+  }
+  
+  if (currentPage === 'king') {
+    return <KingPage onBack={handleBackToHome} />;
+  }
+  
+  if (currentPage === 'shop') {
+    return <ShopPage onBack={handleBackToHome} />;
+  }
+  
+  if (currentPage === 'character') {
+    return <CharacterPage onBack={handleBackToHome} />;
+  }
+
+  // Page temporaire pour les sections non implémentées
+  if (currentPage === 'rules' || currentPage === 'settings') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-amber-800 mb-4">
+            {currentPage === 'rules' ? 'Règles & Récompenses' : 'Paramètres'}
+          </h1>
+          <p className="text-amber-600 mb-6">Cette section sera bientôt disponible.</p>
+          <Button onClick={handleBackToHome} className="bg-amber-600 hover:bg-amber-700">
+            Retour au menu principal
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const menuItems = [
-    { icon: BookOpen, title: "Jouer ta destinée", subtitle: "Découvre l'histoire du jour", path: "/story" },
-    { icon: Crown, title: "Roi du jour", subtitle: "Vois qui règne aujourd'hui", path: "/king" },
-    { icon: ShoppingBag, title: "Formation & Boutique", subtitle: "Améliore tes compétences", path: "/shop" },
-    { icon: User, title: "Mon personnage", subtitle: "Stats et progression", path: "/character" },
-    { icon: Scroll, title: "Règles & Récompenses", subtitle: "Comment devenir roi", path: "/rules" },
-    { icon: Settings, title: "Paramètres", subtitle: "Configuration", path: "/settings" }
+    { icon: BookOpen, title: "Jouer ta destinée", subtitle: "Découvre l'histoire du jour", page: 'story' as CurrentPage },
+    { icon: Crown, title: "Roi du jour", subtitle: "Vois qui règne aujourd'hui", page: 'king' as CurrentPage },
+    { icon: ShoppingBag, title: "Formation & Boutique", subtitle: "Améliore tes compétences", page: 'shop' as CurrentPage },
+    { icon: User, title: "Mon personnage", subtitle: "Stats et progression", page: 'character' as CurrentPage },
+    { icon: Scroll, title: "Règles & Récompenses", subtitle: "Comment devenir roi", page: 'rules' as CurrentPage },
+    { icon: Settings, title: "Paramètres", subtitle: "Configuration", page: 'settings' as CurrentPage }
   ];
 
   return (
@@ -110,10 +169,7 @@ const Index = () => {
                     <Button
                       variant="ghost"
                       className="w-full h-auto p-3 bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border border-amber-300 rounded-lg text-left transition-all duration-300 hover:shadow-md"
-                      onClick={() => {
-                        console.log(`Navigating to ${item.path}`);
-                        // Navigation sera implémentée avec React Router
-                      }}
+                      onClick={() => handleNavigation(item.page)}
                     >
                       <div className="flex items-center space-x-3 w-full">
                         <item.icon className="h-6 w-6 text-amber-700 flex-shrink-0" />
