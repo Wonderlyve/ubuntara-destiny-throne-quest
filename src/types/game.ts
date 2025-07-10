@@ -2,6 +2,13 @@
 export interface StoryChoice {
   text: string;
   next: string;
+  requirements?: {
+    savoir?: number;
+    force?: number;
+    charisme?: number;
+    esprit?: number;
+    fortune?: number;
+  };
 }
 
 export interface StoryNode {
@@ -83,4 +90,11 @@ export interface DailyWinner {
   nzimbu_reward: number;
   usd_equivalent: number;
   portrait_url: string;
+}
+
+export interface GameResult {
+  isWinner: boolean;
+  nzimbu_reward: number;
+  usd_equivalent: number;
+  destiny_title: string;
 }

@@ -1,7 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { StoryData, ShopItems, UserProfile, DailyWinner } from '@/types/game';
+import { StoryData, ShopItems, UserProfile, DailyWinner, GameResult } from '@/types/game';
 import { GameService } from '@/services/gameService';
+import { RewardService } from '@/services/rewardService';
 
 interface GameContextType {
   storyData: StoryData;
@@ -13,6 +14,7 @@ interface GameContextType {
   updateCurrentNode: (nodeId: string) => void;
   purchaseItem: (itemId: string, itemType: 'formations' | 'artefacts' | 'territoires', price: number) => boolean;
   refreshData: () => void;
+  calculateGameResult: (nodeId: string) => GameResult;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -64,6 +66,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     setCurrentNode(GameService.getUserProfile().daily_progress.current_node);
   };
 
+  const calculateGameResult = (nodeId: string): GameResult => {
+    return RewardService.calculateGameResult(nodeId, userProfile);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -76,6 +82,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         updateCurrentNode,
         purchaseItem,
         refreshData,
+        calculateGameResult,
       }}
     >
       {children}
