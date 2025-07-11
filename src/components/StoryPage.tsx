@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star, Crown, Coins, Trophy, Skull } from 'lucide-react';
+import { ArrowLeft, Star, Crown, Coins, Trophy, Skull, Zap, Sparkles } from 'lucide-react';
 import { useGame } from '@/contexts/GameContext';
 import { RewardService } from '@/services/rewardService';
 import { EndingsService } from '@/services/endingsService';
@@ -138,10 +137,10 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
 
   if (!currentStoryNode) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-amber-800 mb-4">Erreur: Histoire non trouvée</p>
-          <Button onClick={onBack} className="bg-amber-600 hover:bg-amber-700">
+      <div className="min-h-screen bg-gradient-to-br from-background to-background/80 p-4 flex items-center justify-center">
+        <div className="text-center gaming-card p-8">
+          <p className="text-foreground mb-4 text-lg">⚠️ Histoire non trouvée</p>
+          <Button onClick={onBack} className="gaming-button gaming-gradient-purple px-6 py-3">
             Retour au menu
           </Button>
         </div>
@@ -150,259 +149,275 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4">
-      {/* Stats du joueur - En haut comme demandé */}
-      <motion.div
-        className="max-w-lg mx-auto mb-4 bg-white/90 rounded-lg p-4 border border-amber-200 shadow-lg"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          {Object.entries(userProfile.stats).map(([stat, value]) => (
-            <div key={stat} className="flex justify-between items-center">
-              <span className="capitalize text-amber-700 font-medium">{stat}:</span>
-              <div className="flex items-center space-x-2">
-                <div className="w-12 h-2 bg-amber-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-amber-400 to-orange-400 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(value, 100)}%` }}
-                  />
-                </div>
-                <span className="text-amber-800 font-bold min-w-[2rem] text-right">{value}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 text-center flex items-center justify-center space-x-4">
-          <div className="flex items-center">
-            <Coins className="h-4 w-4 text-amber-600 mr-1" />
-            <span className="text-amber-700 font-semibold">{userProfile.nzimbu_balance} Nz</span>
-          </div>
-          <div className="text-xs text-amber-600">
-            Parcours: {playerChoices.length}/30
-          </div>
-        </div>
-      </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 left-10 w-24 h-24 gaming-gradient-purple rounded-full opacity-10 floating-animation" />
+        <div className="absolute top-40 right-20 w-32 h-32 gaming-gradient-blue rounded-full opacity-10 floating-animation" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-40 left-20 w-20 h-20 gaming-gradient-green rounded-full opacity-10 floating-animation" style={{ animationDelay: '2s' }} />
+      </div>
 
-      {/* Header */}
-      <motion.div
-        className="flex items-center justify-between mb-6 max-w-lg mx-auto"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <Button variant="ghost" size="sm" className="text-amber-700" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour
-        </Button>
-        <div className="flex items-center space-x-2">
-          <Star className="h-5 w-5 text-amber-500" />
-          <span className="text-sm font-medium text-amber-700">
-            Étape {getStepNumber(currentNode)}
-          </span>
-        </div>
-      </motion.div>
-
-      <AnimatePresence mode="wait">
-        {!isTransitioning && (
-          <motion.div
-            key={currentNode}
-            className="max-w-lg mx-auto bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-2xl border-4 border-amber-200 p-6"
-            initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            exit={{ opacity: 0, scale: 0.9, rotateY: 90 }}
-            transition={{ duration: 0.8 }}
-          >
-            {/* Titre de l'étape */}
-            <motion.h1 
-              className="text-2xl font-bold text-amber-800 mb-4 text-center font-serif"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              {currentStoryNode.title}
-            </motion.h1>
-
-            {/* Contenu narratif */}
-            <motion.div
-              className="bg-white/60 rounded-lg p-4 mb-6 border-l-4 border-amber-400"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <p className="text-amber-800 leading-relaxed font-serif text-sm whitespace-pre-line">
-                {currentStoryNode.text}
-              </p>
-            </motion.div>
-
-            {/* Choix ou fin de jeu */}
-            {!isGameComplete && currentStoryNode.choices.length > 0 ? (
-              <motion.div
-                className="space-y-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-              >
-                <h3 className="text-lg font-semibold text-amber-700 mb-3 text-center">
-                  Quel est ton choix ?
-                </h3>
-                
-                {currentStoryNode.choices.map((choice, index) => {
-                  const canChoose = !choice.requirements || RewardService.checkChoiceRequirements(choice, userProfile.stats);
-                  
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.8 + index * 0.1 }}
-                    >
-                      <Button
-                        variant="outline"
-                        className={`w-full p-4 h-auto text-left transition-all duration-300 hover:shadow-md rounded-lg min-h-[4rem] ${
-                          canChoose 
-                            ? 'bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border-amber-300' 
-                            : 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed'
-                        }`}
-                        onClick={() => canChoose && handleChoice(choice, index)}
-                        disabled={!canChoose}
-                      >
-                        <div className="w-full">
-                          <div className="font-medium text-amber-800 text-sm leading-relaxed break-words">
-                            {choice.text}
-                          </div>
-                          {choice.requirements && (
-                            <div className="text-xs text-amber-600 mt-2 pt-2 border-t border-amber-200">
-                              Requis: {Object.entries(choice.requirements).map(([stat, value]) => 
-                                `${stat}: ${value}`
-                              ).join(', ')}
-                            </div>
-                          )}
-                        </div>
-                      </Button>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            ) : (
-              // Fin du jeu avec résultats
-              <motion.div
-                className="text-center space-y-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-              >
-                <div className="flex justify-center mb-4">
-                  {gameResult?.isWinner ? (
-                    gameResult.usd_equivalent >= 1000 ? (
-                      <Trophy className="h-12 w-12 text-yellow-500" />
-                    ) : (
-                      <Crown className="h-12 w-12 text-amber-500" />
-                    )
-                  ) : (
-                    <Skull className="h-12 w-12 text-red-500" />
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold text-amber-700 mb-3">
-                  {gameResult?.destiny_title || "Fin de l'aventure !"}
-                </h3>
-                <p className="text-amber-600 text-sm mb-4">
-                  {gameResult?.isWinner 
-                    ? "Ton destin s'achève dans la gloire !" 
-                    : "Ton parcours se termine tragiquement..."}
-                </p>
-
-                {/* Résultats des récompenses */}
-                {gameResult && (
-                  <motion.div
-                    className={`rounded-lg p-4 mb-4 border ${
-                      gameResult.isWinner 
-                        ? gameResult.usd_equivalent >= 1000 
-                          ? 'bg-yellow-100/70 border-yellow-300' 
-                          : 'bg-green-100/70 border-green-300'
-                        : 'bg-red-100/70 border-red-300'
-                    }`}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1 }}
-                  >
-                    {gameResult.isWinner ? (
-                      <div className="text-center">
-                        <div className={`font-bold mb-2 ${
-                          gameResult.usd_equivalent >= 1000 
-                            ? 'text-yellow-600 text-lg' 
-                            : 'text-green-600'
-                        }`}>
-                          {gameResult.usd_equivalent >= 1000 
-                            ? '🏆 JACKPOT ROYAL ! 🏆' 
-                            : '🎉 Victoire ! 🎉'}
-                        </div>
-                        <div className="text-amber-800">
-                          <div>Récompense: <span className="font-bold">{gameResult.nzimbu_reward} Nz</span></div>
-                          <div>Équivalent: <span className="font-bold">${gameResult.usd_equivalent} USD</span></div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <div className="text-red-600 font-bold mb-2">💀 Destin Tragique 💀</div>
-                        <div className="text-amber-700 text-sm">
-                          Aucune récompense... Mais l'aventure peut recommencer !
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-
-                <div className="space-y-2">
-                  <Button
-                    onClick={handleRestart}
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                  >
-                    Recommencer l'aventure
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={onBack}
-                    className="w-full border-amber-300 text-amber-700 hover:bg-amber-100"
-                  >
-                    Retour au menu
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Animation de transition */}
-      {isTransitioning && (
+      <div className="relative z-10 p-4">
+        {/* Stats du joueur */}
         <motion.div
-          className="max-w-lg mx-auto flex items-center justify-center h-64"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          className="max-w-lg mx-auto mb-6 gaming-card p-4"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
         >
-          <div className="text-center">
-            <motion.div
-              className="w-16 h-16 border-4 border-amber-300 border-t-amber-600 rounded-full mx-auto mb-4"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            />
-            <p className="text-amber-700 font-serif">Le destin se tisse...</p>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            {Object.entries(userProfile.stats).map(([stat, value]) => (
+              <div key={stat} className="flex justify-between items-center">
+                <span className="capitalize text-foreground/80 font-medium">{stat}:</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full gaming-gradient-blue rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(value, 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-primary font-bold min-w-[2rem] text-right">{value}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center bg-gradient-to-r from-yellow-400/20 to-orange-400/20 px-3 py-1 rounded-full">
+              <Coins className="h-4 w-4 text-yellow-400 mr-2" />
+              <span className="text-yellow-400 font-bold">{userProfile.nzimbu_balance} Nz</span>
+            </div>
+            <div className="text-sm text-muted-foreground bg-muted/30 px-3 py-1 rounded-full">
+              Étape: {playerChoices.length}/30
+            </div>
           </div>
         </motion.div>
-      )}
 
-      {/* Modal des résultats */}
-      {gameResult && (
-        <GameResultModal
-          isOpen={showResultModal}
-          onClose={() => setShowResultModal(false)}
-          gameResult={gameResult}
-          playerChoices={playerChoices}
-          onRestart={handleRestart}
-          onBackToMenu={onBack}
-        />
-      )}
+        {/* Header */}
+        <motion.div
+          className="flex items-center justify-between mb-8 max-w-lg mx-auto"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground hover:text-primary transition-colors" 
+            onClick={onBack}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
+          </Button>
+          <div className="flex items-center space-x-2 bg-primary/20 px-4 py-2 rounded-full">
+            <Star className="h-5 w-5 text-primary" />
+            <span className="font-bold text-primary">
+              Étape {getStepNumber(currentNode)}
+            </span>
+          </div>
+        </motion.div>
+
+        <AnimatePresence mode="wait">
+          {!isTransitioning && (
+            <motion.div
+              key={currentNode}
+              className="max-w-lg mx-auto gaming-card p-8"
+              initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              exit={{ opacity: 0, scale: 0.9, rotateY: 90 }}
+              transition={{ duration: 0.8 }}
+            >
+              {/* Titre de l'étape */}
+              <motion.h1 
+                className="text-2xl md:text-3xl font-bold text-center mb-6 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                {currentStoryNode.title}
+              </motion.h1>
+
+              {/* Contenu narratif */}
+              <motion.div
+                className="bg-muted/30 backdrop-blur rounded-xl p-6 mb-8 border border-border/50"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <p className="text-foreground leading-relaxed text-base whitespace-pre-line">
+                  {currentStoryNode.text}
+                </p>
+              </motion.div>
+
+              {/* Choix ou fin de jeu */}
+              {!isGameComplete && currentStoryNode.choices.length > 0 ? (
+                <motion.div
+                  className="space-y-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <h3 className="text-xl font-bold text-center mb-6 text-foreground flex items-center justify-center">
+                    <Sparkles className="h-5 w-5 mr-2 text-primary" />
+                    Quel est ton choix ?
+                    <Zap className="h-5 w-5 ml-2 text-accent" />
+                  </h3>
+                  
+                  {currentStoryNode.choices.map((choice, index) => {
+                    const canChoose = !choice.requirements || RewardService.checkChoiceRequirements(choice, userProfile.stats);
+                    
+                    return (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 + index * 0.1 }}
+                      >
+                        <Button
+                          variant="outline"
+                          className={`w-full p-6 h-auto text-left transition-all duration-300 rounded-xl min-h-[5rem] text-wrap ${
+                            canChoose 
+                              ? 'gaming-card gaming-gradient-purple hover:scale-105 border-primary/30 text-white hover:border-accent/50' 
+                              : 'bg-muted/50 border-muted text-muted-foreground opacity-50 cursor-not-allowed'
+                          }`}
+                          onClick={() => canChoose && handleChoice(choice, index)}
+                          disabled={!canChoose}
+                        >
+                          <div className="w-full">
+                            <div className={`font-medium leading-relaxed break-words whitespace-normal text-left ${canChoose ? 'text-white' : 'text-muted-foreground'}`}>
+                              {choice.text}
+                            </div>
+                            {choice.requirements && (
+                              <div className="text-xs mt-3 pt-3 border-t border-white/20">
+                                <span className="text-yellow-300">Requis:</span> {Object.entries(choice.requirements).map(([stat, value]) => 
+                                  `${stat}: ${value}`
+                                ).join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        </Button>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="text-center space-y-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <div className="flex justify-center mb-6">
+                    {gameResult?.isWinner ? (
+                      gameResult.usd_equivalent >= 1000 ? (
+                        <Trophy className="h-16 w-16 text-yellow-400 pulse-glow" />
+                      ) : (
+                        <Crown className="h-16 w-16 text-primary pulse-glow" />
+                      )
+                    ) : (
+                      <Skull className="h-16 w-16 text-destructive pulse-glow" />
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-4">
+                    {gameResult?.destiny_title || "Fin de l'aventure !"}
+                  </h3>
+                  <p className="text-muted-foreground text-lg mb-6">
+                    {gameResult?.isWinner 
+                      ? "✨ Ton destin s'achève dans la gloire !" 
+                      : "💀 Ton parcours se termine tragiquement..."}
+                  </p>
+
+                  {/* Résultats des récompenses */}
+                  {gameResult && (
+                    <motion.div
+                      className={`gaming-card p-6 mb-6 ${
+                        gameResult.isWinner 
+                          ? gameResult.usd_equivalent >= 1000 
+                            ? 'gaming-gradient-yellow border-yellow-400/30' 
+                            : 'gaming-gradient-green border-green-400/30'
+                          : 'bg-gradient-to-br from-red-900/50 to-red-800/50 border-red-400/30'
+                      }`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1 }}
+                    >
+                      {gameResult.isWinner ? (
+                        <div className="text-center">
+                          <div className={`font-bold mb-3 text-xl ${
+                            gameResult.usd_equivalent >= 1000 
+                              ? 'text-yellow-300' 
+                              : 'text-white'
+                          }`}>
+                            {gameResult.usd_equivalent >= 1000 
+                              ? '👑 JACKPOT ROYAL ! 👑' 
+                              : '🎉 Victoire Éclatante ! 🎉'}
+                          </div>
+                          <div className="text-white space-y-2">
+                            <div className="text-lg">Récompense: <span className="font-bold text-yellow-300">{gameResult.nzimbu_reward} Nz</span></div>
+                            <div>Équivalent: <span className="font-bold text-green-300">${gameResult.usd_equivalent} USD</span></div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <div className="text-red-300 font-bold mb-3 text-xl">💀 Destin Tragique 💀</div>
+                          <div className="text-white">
+                            Aucune récompense... Mais l'aventure peut recommencer !
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  <div className="space-y-3">
+                    <Button
+                      onClick={handleRestart}
+                      className="w-full gaming-button gaming-gradient-purple text-lg py-4"
+                    >
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      Recommencer l'aventure
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={onBack}
+                      className="w-full border-border hover:bg-muted/50 py-4"
+                    >
+                      Retour au menu
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Animation de transition */}
+        {isTransitioning && (
+          <motion.div
+            className="max-w-lg mx-auto flex items-center justify-center h-64"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="text-center gaming-card p-8">
+              <motion.div
+                className="w-20 h-20 border-4 border-primary/30 border-t-primary rounded-full mx-auto mb-6"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <p className="text-foreground font-bold text-lg">✨ Le destin se tisse...</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Modal des résultats */}
+        {gameResult && (
+          <GameResultModal
+            isOpen={showResultModal}
+            onClose={() => setShowResultModal(false)}
+            gameResult={gameResult}
+            playerChoices={playerChoices}
+            onRestart={handleRestart}
+            onBackToMenu={onBack}
+          />
+        )}
+      </div>
     </div>
   );
 };
