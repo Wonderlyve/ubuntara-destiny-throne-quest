@@ -153,7 +153,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4">
       {/* Stats du joueur - En haut comme demandé */}
       <motion.div
-        className="max-w-md mx-auto mb-4 bg-white/80 rounded-lg p-4 border border-amber-200"
+        className="max-w-lg mx-auto mb-4 bg-white/90 rounded-lg p-4 border border-amber-200 shadow-lg"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -168,12 +168,12 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
                     style={{ width: `${Math.min(value, 100)}%` }}
                   />
                 </div>
-                <span className="text-amber-800 font-bold">{value}</span>
+                <span className="text-amber-800 font-bold min-w-[2rem] text-right">{value}</span>
               </div>
             </div>
           ))}
         </div>
-        <div className="mt-2 text-center flex items-center justify-center space-x-4">
+        <div className="mt-3 text-center flex items-center justify-center space-x-4">
           <div className="flex items-center">
             <Coins className="h-4 w-4 text-amber-600 mr-1" />
             <span className="text-amber-700 font-semibold">{userProfile.nzimbu_balance} Nz</span>
@@ -186,7 +186,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
 
       {/* Header */}
       <motion.div
-        className="flex items-center justify-between mb-6"
+        className="flex items-center justify-between mb-6 max-w-lg mx-auto"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -206,7 +206,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
         {!isTransitioning && (
           <motion.div
             key={currentNode}
-            className="max-w-md mx-auto bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-2xl border-4 border-amber-200 p-6"
+            className="max-w-lg mx-auto bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-2xl border-4 border-amber-200 p-6"
             initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
             exit={{ opacity: 0, scale: 0.9, rotateY: 90 }}
@@ -224,12 +224,12 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
 
             {/* Contenu narratif */}
             <motion.div
-              className="bg-white/50 rounded-lg p-4 mb-6 border-l-4 border-amber-400"
+              className="bg-white/60 rounded-lg p-4 mb-6 border-l-4 border-amber-400"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <p className="text-amber-800 leading-relaxed font-serif text-sm">
+              <p className="text-amber-800 leading-relaxed font-serif text-sm whitespace-pre-line">
                 {currentStoryNode.text}
               </p>
             </motion.div>
@@ -258,7 +258,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
                     >
                       <Button
                         variant="outline"
-                        className={`w-full p-3 h-auto text-left transition-all duration-300 hover:shadow-md rounded-lg ${
+                        className={`w-full p-4 h-auto text-left transition-all duration-300 hover:shadow-md rounded-lg min-h-[4rem] ${
                           canChoose 
                             ? 'bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border-amber-300' 
                             : 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed'
@@ -267,11 +267,11 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
                         disabled={!canChoose}
                       >
                         <div className="w-full">
-                          <div className="font-medium text-amber-800 text-sm">
+                          <div className="font-medium text-amber-800 text-sm leading-relaxed break-words">
                             {choice.text}
                           </div>
                           {choice.requirements && (
-                            <div className="text-xs text-amber-600 mt-1">
+                            <div className="text-xs text-amber-600 mt-2 pt-2 border-t border-amber-200">
                               Requis: {Object.entries(choice.requirements).map(([stat, value]) => 
                                 `${stat}: ${value}`
                               ).join(', ')}
@@ -376,7 +376,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
       {/* Animation de transition */}
       {isTransitioning && (
         <motion.div
-          className="max-w-md mx-auto flex items-center justify-center h-64"
+          className="max-w-lg mx-auto flex items-center justify-center h-64"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
