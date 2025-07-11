@@ -385,50 +385,264 @@ const defaultStoryData: StoryData = {
     },
     "30": {
       "title": "Étape 30 : L'Ultime Destinée",
-      "text": "Le moment est venu. Ton parcours de vie touche à sa fin, mais ton héritage façonnera l'avenir d'Ubuntara pour l'éternité. Devant toi s'ouvrent les portes de ton destin final. Chaque choix que tu as fait, chaque bataille que tu as menée, chaque âme que tu as touchée t'a mené à cet instant suprême. Quel sera ton destin final ?",
-      "choices": [
-        { "text": "Régner éternellement comme Roi Suprême", "next": "end_roi_suprême", "requirements": { "savoir": 40, "force": 35, "charisme": 45, "esprit": 40, "fortune": 30 } },
-        { "text": "Mourir en héros pour sauver ton royaume", "next": "end_héros_martyr", "requirements": { "force": 30, "charisme": 25, "esprit": 35 } },
-        { "text": "Devenir le maître secret de l'économie", "next": "end_marchand_d_influence", "requirements": { "savoir": 35, "charisme": 30, "fortune": 40 } },
-        { "text": "Être couronné Chef de Guerre légendaire", "next": "end_chef_de_guerre", "requirements": { "force": 45, "charisme": 30, "savoir": 25 } },
-        { "text": "Transcender comme Guérisseur Éternel", "next": "end_guérisseur_éternel", "requirements": { "esprit": 45, "savoir": 30, "charisme": 25 } },
-        { "text": "Être banni pour tes crimes et trahisons", "next": "end_traître_banni" },
-        { "text": "Partir en Voyageur sans fin, libre et sage", "next": "end_voyageur_sans_fin", "requirements": { "esprit": 35, "savoir": 30 } }
-      ]
+      "text": "Le moment est venu. Ton parcours de vie touche à sa fin, mais ton héritage façonnera l'avenir d'Ubuntara pour l'éternité. Les étoiles brillent au-dessus d'Ubuntara comme elles brillaient le jour de ta naissance. Le cercle se referme. Il est temps de sceller ton destin pour l'éternité. Chaque choix compte maintenant plus que jamais...",
+      "choices": []
     },
+
+    // Toutes les nouvelles fins (50 fins au total)
     "end_roi_suprême": {
-      "title": "Destin Final : Roi Suprême d'Ubuntara",
-      "text": "Ton règne s'achève dans la gloire éternelle. Tu as unifié Ubuntara sous ta couronne et ton nom résonnera à travers les âges comme celui du plus grand roi que le royaume ait connu. Tes statues orneront les places publiques et tes lois guideront les générations futures. Tu es devenu una légende vivante, le Roi Suprême d'Ubuntara pour l'éternité.",
+      "title": "Roi Suprême d'Ubuntara",
+      "text": "Tu as suivi le chemin parfait ! Ton règne s'achève dans la gloire éternelle. Tu es le Roi Suprême d'Ubuntara, et ton nom résonnera à travers les âges !",
       "choices": []
     },
-    "end_héros_martyr": {
-      "title": "Destin Final : Héros Martyr de la Liberté",
-      "text": "Tu t'es sacrifié pour ton peuple dans un geste d'héroïsme ultime. Ta mort héroïque a inspiré une résistance qui a libéré Ubuntara de ses oppresseurs. Ton nom est chanté dans toutes les chaumières et ton sacrifice a donné naissance à une nouvelle ère de liberté. Les enfants apprennent ton histoire et les poètes composent des épopées sur ton courage légendaire.",
+    "end_noble_guerrier": {
+      "title": "Noble Guerrier",
+      "text": "Tu as combattu avec honneur sur tous les champs de bataille. Tes exploits militaires te valent une pension royale et le respect éternel des soldats.",
       "choices": []
     },
-    "end_marchand_d_influence": {
-      "title": "Destin Final : Maître de l'Ombre Économique",
-      "text": "Sans couronne ni titre officiel, tu contrôles secrètement l'économie d'Ubuntara et des royaumes voisins. Tes réseaux commerciaux s'étendent sur tout le continent et les rois eux-mêmes dépendent de tes décisions financières. Tu es devenu l'homme le plus puissant d'Afrique, tirant les ficelles depuis l'ombre avec une fortune qui dépasse celle des empires.",
+    "end_sage_conseiller": {
+      "title": "Sage Conseiller",
+      "text": "Ta sagesse a guidé le royaume à travers les épreuves. Une rente modeste récompense tes bons conseils qui ont sauvé bien des vies.",
       "choices": []
     },
-    "end_chef_de_guerre": {
-      "title": "Destin Final : Chef de Guerre Légendaire",
-      "text": "Tes victoires militaires ont forgé ta légende à travers tout le continent. Aucune armée n'ose te défier et ton nom seul suffit à faire trembler tes ennemis. Tu as conquis des territoires vastes comme des océans et établi un empire militaire qui perdurera des siècles. Les académies militaires enseignent tes stratégies et les généraux invoquent ton nom avant chaque bataille.",
+    "end_marchand_prospère": {
+      "title": "Marchand Prospère",
+      "text": "Tes talents commerciaux t'ont enrichi et ont développé l'économie du royaume. Tu conserves une partie de ta belle fortune.",
       "choices": []
     },
-    "end_guérisseur_éternel": {
-      "title": "Destin Final : Guérisseur Éternel des Âmes",
-      "text": "Tu as transcendé les ambitions terrestres pour devenir un guérisseur légendaire des corps et des âmes. Ton savoir mystique a sauvé des milliers de vies et apaisé les conflits les plus anciens. Même sans trône, tu es vénéré comme un sage divin. Ton temple est devenu un lieu de pèlerinage où les affligés trouvent la paix et les dirigeants cherchent la sagesse.",
+    "end_diplomate_habile": {
+      "title": "Diplomate Habile",
+      "text": "Tes négociations ont évité bien des conflits sanglants. Le royaume te verse une gratification pour tes services diplomatiques.",
+      "choices": []
+    },
+    "end_chef_village": {
+      "title": "Chef de Village Respecté",
+      "text": "Tu gouvernes un petit territoire avec sagesse et justice. Tes sujets reconnaissants t'offrent un tribut en signe de respect.",
+      "choices": []
+    },
+    "end_guérisseur_renommé": {
+      "title": "Guérisseur Renommé",
+      "text": "Tes remèdes ont sauvé d'innombrables vies dans tout le royaume. Les familles guéries te remercient modestement mais sincèrement.",
+      "choices": []
+    },
+    "end_artisan_talentueux": {
+      "title": "Artisan Talentueux",
+      "text": "Tes créations artistiques sont admirées dans tout Ubuntara. Tu vis dignement de ton art reconnu par tous.",
+      "choices": []
+    },
+    "end_érudit_estimé": {
+      "title": "Érudit Estimé",
+      "text": "Ton savoir immense éclaire les jeunes générations avides d'apprendre. L'école royale te verse une allocation bien méritée.",
+      "choices": []
+    },
+    "end_gardien_tradition": {
+      "title": "Gardien des Traditions",
+      "text": "Tu préserves fidèlement la culture ancestrale d'Ubuntara. Les anciens respectueux t'honorent d'une offrande traditionnelle.",
+      "choices": []
+    },
+    "end_conteur_aimé": {
+      "title": "Conteur Aimé",
+      "text": "Tes histoires merveilleuses enchantent les foules sur les places publiques. Quelques pièces d'or tombent généreusement dans ton chapeau.",
       "choices": []
     },
     "end_traître_banni": {
-      "title": "Destin Final : Traître Banni dans l'Ombre",
-      "text": "Tes trahisons et ta soif aveugle de pouvoir t'ont valu l'exil définitif. Chassé d'Ubuntara, tu erres de royaume en royaume, fuyant ta réputation sulfureuse. Tes anciens sujets ont effacé ton nom des chroniques officielles et tes descendants ont changé d'identité pour échapper à ta honte. Tu es devenu l'exemple même de ce qu'un dirigeant ne doit jamais devenir.",
+      "title": "Traître Banni",
+      "text": "Tes nombreuses trahisons t'ont valu l'exil définitif du royaume. Tu erres maintenant de terre en terre, honni et méprisé par tous.",
       "choices": []
     },
-    "end_voyageur_sans_fin": {
-      "title": "Destin Final : Voyageur Sage Sans Fin",
-      "text": "Tu as refusé le pouvoir ultime pour embrasser la liberté absolue. Devanu un voyageur sage, tu parcours les routes d'Afrique, partageant ta sagesse et tes histoires. Ton renoncement au trône t'a libéré des chaînes du pouvoir et tu es devenu une légende vivante de la sagesse. Les jeunes dirigeants cherchent tes conseils et ton nom est synonyme de liberté spirituelle.",
+    "end_fou_du_roi": {
+      "title": "Fou du Roi Déchu",
+      "text": "L'ambition démesurée t'a rendu complètement fou. Tu délires maintenant dans les sombres cachots du palais royal, oublié de tous.",
+      "choices": []
+    },
+    "end_assassin_raté": {
+      "title": "Assassin Raté",
+      "text": "Ton complot contre le roi a lamentablement échoué. Tu péris maintenant sous les lames vengeresses de tes nombreux ennemis.",
+      "choices": []
+    },
+    "end_lâche_fuyant": {
+      "title": "Lâche Fuyant",
+      "text": "Tu as honteusement fui face au danger quand ton peuple avait besoin de toi. Ta couardise te poursuit jusqu'à une mort solitaire.",
+      "choices": []
+    },
+    "end_maudit_sorcier": {
+      "title": "Maudit par les Sorciers",
+      "text": "Ta quête imprudente de pouvoir magique interdit t'a complètement consumé. Les esprits maléfiques te tourmentent pour l'éternité.",
+      "choices": []
+    },
+    "end_esclave_dette": {
+      "title": "Esclave de ses Dettes",
+      "text": "Tes emprunts irréfléchis t'ont définitivement ruiné. Tu finis tes jours à travailler dans les mines sombres pour rembourser.",
+      "choices": []
+    },
+    "end_pestifère_rejeté": {
+      "title": "Pestifère Rejeté",
+      "text": "Une terrible maladie t'a défiguré et rendu contagieux. Tu mendies maintenant aux portes de la ville, évité par tous.",
+      "choices": []
+    },
+    "end_prisonnier_guerre": {
+      "title": "Prisonnier de Guerre",
+      "text": "Capturé par l'ennemi lors d'une bataille, tu croupis dans un cachot humide sans espoir de libération.",
+      "choices": []
+    },
+    "end_mendiant_déchu": {
+      "title": "Mendiant Déchu",
+      "text": "De noble respecté devenu simple gueux, tu supplies maintenant dans les rues poussiéreuses pour survivre chaque jour.",
+      "choices": []
+    },
+    "end_ermite_fou": {
+      "title": "Ermite Fou",
+      "text": "Retiré complètement du monde des humains, tu parles maintenant aux arbres et aux pierres, ayant perdu toute raison.",
+      "choices": []
+    },
+    "end_fermier_paisible": {
+      "title": "Fermier Paisible",
+      "text": "Tu as sagement choisi la simplicité de la vie rurale. Ta récolte abondante nourrit fidèlement ta famille chaque saison.",
+      "choices": []
+    },
+    "end_pêcheur_rivière": {
+      "title": "Pêcheur de la Rivière",
+      "text": "Les poissons argentés de la rivière sacrée nourrissent ton village. Une vie simple mais honorable et respectée de tous.",
+      "choices": []
+    },
+    "end_berger_collines": {
+      "title": "Berger des Collines",
+      "text": "Tes troupeaux nombreux paissent en paix sur les collines verdoyantes. La laine de tes moutons te rapporte quelques sous.",
+      "choices": []
+    },
+    "end_chasseur_forêt": {
+      "title": "Chasseur de la Forêt",
+      "text": "Le gibier de la grande forêt nourrit les tiens avec générosité. Tu vis libre et indépendant dans les bois mystérieux.",
+      "choices": []
+    },
+    "end_forgeron_village": {
+      "title": "Forgeron du Village",
+      "text": "Tes outils solides équipent tous les paysans du royaume. Un métier honorable qui nourrit bien son homme.",
+      "choices": []
+    },
+    "end_tisserand_habile": {
+      "title": "Tisserand Habile",
+      "text": "Tes étoffes magnifiques parent les plus nobles dames du royaume. Un art délicat mais profitable pour qui sait s'y prendre.",
+      "choices": []
+    },
+    "end_brasseur_taverne": {
+      "title": "Brasseur de Taverne",
+      "text": "Ta bière savoureuse réjouit les cœurs et délasse les corps fatigués. Les clients fidèles payent toujours volontiers.",
+      "choices": []
+    },
+    "end_musicien_cour": {
+      "title": "Musicien de Cour",
+      "text": "Tes mélodies divines charment la noblesse lors des grandes fêtes. Quelques pièces d'or brillantes tombent en récompense.",
+      "choices": []
+    },
+    "end_scribe_lettré": {
+      "title": "Scribe Lettré",
+      "text": "Tu écris avec art tous les contrats et lettres importantes. L'écriture élégante nourrit bien son homme instruit.",
+      "choices": []
+    },
+    "end_garde_royal": {
+      "title": "Garde Royal",
+      "text": "Tu protèges le palais avec une fidélité sans faille. Une solde modeste mais régulière récompense ton service loyal.",
+      "choices": []
+    },
+    "end_empoisonné_rival": {
+      "title": "Empoisonné par un Rival",
+      "text": "Ton succès rapide a attisé la jalousie mortelle d'un rival. Le poison sournois coule maintenant dans tes veines.",
+      "choices": []
+    },
+    "end_noyé_rivière": {
+      "title": "Noyé dans la Rivière",
+      "text": "En fuyant lâchement tes ennemis acharnés, tu péris tragiquement dans les eaux troubles et tumultueuses de la rivière.",
+      "choices": []
+    },
+    "end_dévoré_bêtes": {
+      "title": "Dévoré par les Bêtes",
+      "text": "Perdu et désemparé dans la jungle hostile, tu deviens la proie facile des fauves affamés qui rôdent la nuit.",
+      "choices": []
+    },
+    "end_écrasé_foule": {
+      "title": "Écrasé par la Foule",
+      "text": "Ton discours enflammé a provoqué une émeute incontrôlable. Tu péris tragiquement piétiné par la foule en colère.",
+      "choices": []
+    },
+    "end_brûlé_sorcier": {
+      "title": "Brûlé comme Sorcier",
+      "text": "Faussement accusé de magie noire par des ennemis, tu péris dans les flammes du bûcher sous les cris de la foule.",
+      "choices": []
+    },
+    "end_pendu_voleur": {
+      "title": "Pendu comme Voleur",
+      "text": "Pris la main dans le sac royal, tu balances maintenant au bout d'une corde sous le gibet de la place publique.",
+      "choices": []
+    },
+    "end_lapidé_blasphème": {
+      "title": "Lapidé pour Blasphème",
+      "text": "Tes paroles imprudentes contre les dieux sacrés t'ont valu une mort atroce par lapidation publique.",
+      "choices": []
+    },
+    "end_gelé_montagne": {
+      "title": "Gelé sur la Montagne",
+      "text": "En quête de pouvoir mystique sur les sommets interdits, tu péris gelé dans les neiges éternelles et silencieuses.",
+      "choices": []
+    },
+    "end_fou_solitude": {
+      "title": "Fou de Solitude",
+      "text": "L'isolement total a complètement brisé ton esprit fragile. Tu parles maintenant aux ombres et aux fantômes du passé.",
+      "choices": []
+    },
+    "end_maudit_ancêtres": {
+      "title": "Maudit par les Ancêtres",
+      "text": "Tes crimes terribles ont réveillé la colère des morts. Les esprits vengeurs de tes ancêtres te hantent sans répit.",
+      "choices": []
+    },
+    "end_chef_caravane": {
+      "title": "Chef de Caravane",
+      "text": "Tu guides avec bravoure les marchands sur les routes dangereuses. Les périls nombreux du voyage payent généreusement bien.",
+      "choices": []
+    },
+    "end_maître_école": {
+      "title": "Maître d'École",
+      "text": "Tu enseignes avec patience aux enfants du royaume les arts et les lettres. Le noble savoir a toujours sa juste récompense.",
+      "choices": []
+    },
+    "end_juge_village": {
+      "title": "Juge de Village",
+      "text": "Tu rends la justice avec une équité reconnue par tous. Les plaideurs reconnaissants te rémunèrent pour tes services.",
+      "choices": []
+    },
+    "end_capitaine_garde": {
+      "title": "Capitaine de la Garde",
+      "text": "Tu commandes les soldats avec un courage exemplaire. Un grade militaire élevé qui paie correctement ses responsabilités.",
+      "choices": []
+    },
+    "end_négociant_soies": {
+      "title": "Négociant en Soies",
+      "text": "Tes tissus précieux et colorés enrichissent modestement ta bourse de marchand. Un commerce délicat mais rentable.",
+      "choices": []
+    },
+    "end_maître_forges": {
+      "title": "Maître des Forges",
+      "text": "Tes armes solides équipent fidèlement l'armée royale. Le travail du métal vaut bien son pesant d'or mérité.",
+      "choices": []
+    },
+    "end_herboriste_royal": {
+      "title": "Herboriste Royal",
+      "text": "Tes potions miraculeuses soignent la cour et les nobles. Un art médical ancien qui se paie au prix fort.",
+      "choices": []
+    },
+    "end_architecte_temple": {
+      "title": "Architecte du Temple",
+      "text": "Tes plans grandioses glorifient les dieux du royaume. Une œuvre divine qui trouve toujours ses généreux mécènes.",
+      "choices": []
+    },
+    "end_ambassadeur_paix": {
+      "title": "Ambassadeur de Paix",
+      "text": "Tes négociations habiles évitent les guerres destructrices. La diplomatie fine rapporte toujours à long terme.",
+      "choices": []
+    },
+    "end_chronicler_royal": {
+      "title": "Chroniqueur Royal",
+      "text": "Tu écris fidèlement l'histoire glorieuse du royaume. La postérité et la mémoire ont toujours eu leur juste prix.",
       "choices": []
     }
   }

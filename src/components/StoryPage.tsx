@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star, Crown, Coins } from 'lucide-react';
+import { ArrowLeft, Star, Crown, Coins, Trophy, Skull } from 'lucide-react';
 import { useGame } from '@/contexts/GameContext';
 import { RewardService } from '@/services/rewardService';
+import { EndingsService } from '@/services/endingsService';
 import { GameResult } from '@/types/game';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +18,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
   const [isGameComplete, setIsGameComplete] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [playerChoices, setPlayerChoices] = useState<number[]>([]);
   const { toast } = useToast();
 
   // Scroll to top on component mount and node changes
@@ -31,7 +33,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
     // Vérifier si le jeu est terminé (nœud sans choix)
     if (currentStoryNode && currentStoryNode.choices.length === 0) {
       setIsGameComplete(true);
-      const result = RewardService.calculateGameResult(currentNode, userProfile);
+      const result = RewardService.calculateGameResult(currentNode, userProfile, playerChoices);
       setGameResult(result);
       
       // Ajouter les récompenses au profil
@@ -41,28 +43,46 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
         updatedProfile.has_played_today = true;
         updateUserProfile(updatedProfile);
         
+        if (result.usd_equivalent >= 1000) {
+          toast({
+            title: "🎉 JACKPOT ! 🎉",
+            description: `Tu es le ROI SUPRÊME ! Tu as gagné ${result.nzimbu_reward} Nz (${result.usd_equivalent} USD) !`,
+            duration: 10000
+          });
+        } else {
+          toast({
+            title: "Félicitations !",
+            description: `Tu as gagné ${result.nzimbu_reward} Nz (${result.usd_equivalent} USD) !`
+          });
+        }
+      } else {
         toast({
-          title: "Félicitations !",
-          description: `Vous avez gagné ${result.nzimbu_reward} Nz (${result.usd_equivalent} USD) !`
+          title: "Fin tragique...",
+          description: `Ton parcours se termine sans récompense. Tente ta chance à nouveau !`,
+          variant: "destructive"
         });
       }
     }
-  }, [currentNode, currentStoryNode]);
+  }, [currentNode, currentStoryNode, playerChoices]);
 
-  const handleChoice = async (choice: { text: string; next: string; requirements?: any }) => {
-    console.log(`Choix sélectionné: ${choice.text}`);
+  const handleChoice = async (choice: { text: string; next: string; requirements?: any }, choiceIndex: number) => {
+    console.log(`Choix sélectionné: ${choice.text} (index: ${choiceIndex})`);
     
     // Vérifier les prérequis
     if (choice.requirements && !RewardService.checkChoiceRequirements(choice, userProfile.stats)) {
       toast({
         title: "Prérequis non remplis",
-        description: "Vous ne remplissez pas les conditions pour ce choix. Améliorer vos stats dans la boutique.",
+        description: "Tu ne remplis pas les conditions pour ce choix. Améliore tes stats dans la boutique.",
         variant: "destructive"
       });
       return;
     }
     
     setIsTransitioning(true);
+    
+    // Enregistrer le choix dans le parcours
+    const newPlayerChoices = [...playerChoices, choiceIndex];
+    setPlayerChoices(newPlayerChoices);
     
     // Attendre l'animation de transition
     setTimeout(() => {
@@ -74,13 +94,17 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
       // Enregistrer le choix
       updatedProfile.daily_progress.choices_made.push(choice.text);
       
-      // Marquer comme ayant joué aujourd'hui si on arrive à la fin
-      if (choice.next.startsWith('end_')) {
+      // Si on atteint l'étape 30, déterminer le destin final
+      if (newPlayerChoices.length === 30) {
+        const endingKey = EndingsService.determineEnding(newPlayerChoices);
         updatedProfile.has_played_today = true;
+        updateUserProfile(updatedProfile);
+        updateCurrentNode(endingKey);
+      } else {
+        updateUserProfile(updatedProfile);
+        updateCurrentNode(choice.next);
       }
       
-      updateUserProfile(updatedProfile);
-      updateCurrentNode(choice.next);
       setIsTransitioning(false);
     }, 500);
   };
@@ -94,6 +118,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
     updateCurrentNode(storyData.start);
     setIsGameComplete(false);
     setGameResult(null);
+    setPlayerChoices([]);
     window.scrollTo(0, 0);
   };
 
@@ -139,10 +164,13 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
             </div>
           ))}
         </div>
-        <div className="mt-2 text-center">
-          <div className="flex items-center justify-center">
+        <div className="mt-2 text-center flex items-center justify-center space-x-4">
+          <div className="flex items-center">
             <Coins className="h-4 w-4 text-amber-600 mr-1" />
             <span className="text-amber-700 font-semibold">{userProfile.nzimbu_balance} Nz</span>
+          </div>
+          <div className="text-xs text-amber-600">
+            Parcours: {playerChoices.length}/30
           </div>
         </div>
       </motion.div>
@@ -226,7 +254,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
                             ? 'bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border-amber-300' 
                             : 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed'
                         }`}
-                        onClick={() => canChoose && handleChoice(choice)}
+                        onClick={() => canChoose && handleChoice(choice, index)}
                         disabled={!canChoose}
                       >
                         <div className="w-full">
@@ -255,26 +283,50 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
                 transition={{ delay: 0.7 }}
               >
                 <div className="flex justify-center mb-4">
-                  <Crown className="h-12 w-12 text-amber-500" />
+                  {gameResult?.isWinner ? (
+                    gameResult.usd_equivalent >= 1000 ? (
+                      <Trophy className="h-12 w-12 text-yellow-500" />
+                    ) : (
+                      <Crown className="h-12 w-12 text-amber-500" />
+                    )
+                  ) : (
+                    <Skull className="h-12 w-12 text-red-500" />
+                  )}
                 </div>
                 <h3 className="text-lg font-semibold text-amber-700 mb-3">
                   {gameResult?.destiny_title || "Fin de l'aventure !"}
                 </h3>
                 <p className="text-amber-600 text-sm mb-4">
-                  Ton destin a été scellé. L'histoire d'aujourd'hui est terminée.
+                  {gameResult?.isWinner 
+                    ? "Ton destin s'achève dans la gloire !" 
+                    : "Ton parcours se termine tragiquement..."}
                 </p>
 
                 {/* Résultats des récompenses */}
                 {gameResult && (
                   <motion.div
-                    className="bg-white/70 rounded-lg p-4 mb-4 border border-amber-300"
+                    className={`rounded-lg p-4 mb-4 border ${
+                      gameResult.isWinner 
+                        ? gameResult.usd_equivalent >= 1000 
+                          ? 'bg-yellow-100/70 border-yellow-300' 
+                          : 'bg-green-100/70 border-green-300'
+                        : 'bg-red-100/70 border-red-300'
+                    }`}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 1 }}
                   >
                     {gameResult.isWinner ? (
                       <div className="text-center">
-                        <div className="text-green-600 font-bold mb-2">🎉 Victoire ! 🎉</div>
+                        <div className={`font-bold mb-2 ${
+                          gameResult.usd_equivalent >= 1000 
+                            ? 'text-yellow-600 text-lg' 
+                            : 'text-green-600'
+                        }`}>
+                          {gameResult.usd_equivalent >= 1000 
+                            ? '🏆 JACKPOT ROYAL ! 🏆' 
+                            : '🎉 Victoire ! 🎉'}
+                        </div>
                         <div className="text-amber-800">
                           <div>Récompense: <span className="font-bold">{gameResult.nzimbu_reward} Nz</span></div>
                           <div>Équivalent: <span className="font-bold">${gameResult.usd_equivalent} USD</span></div>
@@ -282,9 +334,9 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
                       </div>
                     ) : (
                       <div className="text-center">
-                        <div className="text-red-600 font-bold mb-2">Aucune récompense</div>
+                        <div className="text-red-600 font-bold mb-2">💀 Destin Tragique 💀</div>
                         <div className="text-amber-700 text-sm">
-                          Ton parcours ne t'a pas mené vers la gloire...
+                          Aucune récompense... Mais l'aventure peut recommencer !
                         </div>
                       </div>
                     )}

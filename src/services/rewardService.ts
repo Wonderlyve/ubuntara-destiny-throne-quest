@@ -1,45 +1,46 @@
 
 import { UserProfile, GameResult } from '@/types/game';
+import { EndingsService } from './endingsService';
+import { LotteryService } from './lotteryService';
 
 export class RewardService {
-  private static readonly DESTINY_REWARDS: Record<string, { nz: number; usd: number; isWinner: boolean }> = {
-    'end_roi_suprême': { nz: 100000, usd: 1000, isWinner: true },
-    'end_héros_martyr': { nz: 50000, usd: 500, isWinner: true },
-    'end_marchand_d_influence': { nz: 75000, usd: 750, isWinner: true },
-    'end_chef_de_guerre': { nz: 60000, usd: 600, isWinner: true },
-    'end_guérisseur_éternel': { nz: 40000, usd: 400, isWinner: true },
-    'end_traître_banni': { nz: 0, usd: 0, isWinner: false },
-    'end_voyageur_sans_fin': { nz: 30000, usd: 300, isWinner: true }
-  };
-
-  private static readonly DESTINY_TITLES: Record<string, string> = {
-    'end_roi_suprême': 'Roi Suprême d\'Ubuntara',
-    'end_héros_martyr': 'Héros Martyr de la Liberté',
-    'end_marchand_d_influence': 'Maître de l\'Ombre Économique',
-    'end_chef_de_guerre': 'Chef de Guerre Légendaire',
-    'end_guérisseur_éternel': 'Guérisseur Éternel des Âmes',
-    'end_traître_banni': 'Traître Banni dans l\'Ombre',
-    'end_voyageur_sans_fin': 'Voyageur Sage Sans Fin'
-  };
-
-  static calculateGameResult(currentNode: string, userProfile: UserProfile): GameResult {
-    const reward = this.DESTINY_REWARDS[currentNode];
-    const title = this.DESTINY_TITLES[currentNode];
-
-    if (!reward || !title) {
+  static calculateGameResult(currentNode: string, userProfile: UserProfile, playerChoices: number[] = []): GameResult {
+    // Si on est sur un nœud de fin
+    if (currentNode.startsWith('end_')) {
+      const endingDetails = EndingsService.getEndingDetails(currentNode);
+      
       return {
-        isWinner: false,
-        nzimbu_reward: 0,
-        usd_equivalent: 0,
-        destiny_title: 'Destin Inconnu'
+        isWinner: endingDetails.isWinner,
+        nzimbu_reward: endingDetails.nz,
+        usd_equivalent: endingDetails.usd,
+        destiny_title: endingDetails.title
       };
     }
 
+    // Si on arrive à la fin du parcours (étape 30), déterminer le destin
+    if (playerChoices.length === 30) {
+      const endingKey = EndingsService.determineEnding(playerChoices);
+      const endingDetails = EndingsService.getEndingDetails(endingKey);
+      
+      // Si c'est le roi suprême, enregistrer le gagnant
+      if (endingKey === 'end_roi_suprême') {
+        LotteryService.registerWinner(userProfile.user_id, userProfile.username);
+      }
+      
+      return {
+        isWinner: endingDetails.isWinner,
+        nzimbu_reward: endingDetails.nz,
+        usd_equivalent: endingDetails.usd,
+        destiny_title: endingDetails.title
+      };
+    }
+
+    // Parcours en cours
     return {
-      isWinner: reward.isWinner,
-      nzimbu_reward: reward.nz,
-      usd_equivalent: reward.usd,
-      destiny_title: title
+      isWinner: false,
+      nzimbu_reward: 0,
+      usd_equivalent: 0,
+      destiny_title: 'Parcours en cours...'
     };
   }
 
@@ -52,5 +53,25 @@ export class RewardService {
       }
     }
     return true;
+  }
+
+  // Obtient les infos du gagnant du jour
+  static getTodaysWinner(): { userId: string; username: string; date: string } | null {
+    return LotteryService.getTodaysWinner();
+  }
+
+  // Vérifie si quelqu'un a déjà gagné aujourd'hui
+  static hasWinnerToday(): boolean {
+    return LotteryService.hasWinnerToday();
+  }
+
+  // Obtient la signature du chemin gagnant (pour debug)
+  static getWinningPathSignature(): string {
+    return LotteryService.getPathSignature();
+  }
+
+  // Statistiques du système
+  static getSystemStats() {
+    return EndingsService.getSystemStats();
   }
 }
