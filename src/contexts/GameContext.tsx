@@ -32,13 +32,15 @@ interface GameProviderProps {
 }
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-  // Initialize with default values to prevent undefined errors
+  // Initialize with proper default values matching the types
   const [storyData, setStoryData] = useState<StoryData>(() => {
     try {
       return GameService.getStoryData();
     } catch (error) {
       console.error('Error loading story data:', error);
       return {
+        title: "Ubuntara",
+        description: "Votre histoire commence...",
         start: "1",
         nodes: {
           "1": {
@@ -70,7 +72,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error loading user profile:', error);
       return {
+        user_id: "default",
         username: "Joueur",
+        created_at: new Date().toISOString(),
         nzimbu_balance: 100,
         stats: {
           savoir: 10,
@@ -88,6 +92,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
           current_node: "1",
           choices_made: []
         },
+        achievements: [],
         has_played_today: false
       };
     }
@@ -99,11 +104,14 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error loading daily winner:', error);
       return {
+        date: new Date().toISOString(),
+        user_id: "none",
         username: "Personne",
         title: "Aucun roi aujourd'hui",
         nzimbu_reward: 0,
         usd_equivalent: 0,
-        date: new Date().toISOString(),
+        final_path: [],
+        portrait_url: "",
         stats: {
           savoir: 0,
           force: 0,
@@ -178,8 +186,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         isWinner: false,
         nzimbu_reward: 0,
         usd_equivalent: 0,
-        destiny_title: "Erreur",
-        ending_description: "Une erreur s'est produite"
+        destiny_title: "Erreur"
       };
     }
   };

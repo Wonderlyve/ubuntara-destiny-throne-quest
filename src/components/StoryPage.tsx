@@ -6,8 +6,10 @@ import { ArrowLeft, Star, Crown, Coins, Trophy, Skull } from 'lucide-react';
 import { useGame } from '@/contexts/GameContext';
 import { RewardService } from '@/services/rewardService';
 import { EndingsService } from '@/services/endingsService';
+import { EarlyEndingsService } from '@/services/earlyEndingsService';
 import { GameResult } from '@/types/game';
 import { useToast } from '@/hooks/use-toast';
+import GameResultModal from './GameResultModal';
 
 interface StoryPageProps {
   onBack: () => void;
@@ -19,6 +21,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [playerChoices, setPlayerChoices] = useState<number[]>([]);
+  const [showResultModal, setShowResultModal] = useState(false);
   const { toast } = useToast();
 
   // Scroll to top on component mount and node changes
@@ -30,11 +33,35 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
   const currentStoryNode = storyData.nodes[currentNode];
   
   useEffect(() => {
-    // Vérifier si le jeu est terminé (nœud sans choix)
-    if (currentStoryNode && currentStoryNode.choices.length === 0) {
+    // Vérifier les fins prématurées à chaque étape
+    const earlyEnding = EarlyEndingsService.checkForEarlyEnding(playerChoices.length, playerChoices);
+    if (earlyEnding) {
+      const result: GameResult = {
+        isWinner: earlyEnding.nz_reward > 0,
+        nzimbu_reward: earlyEnding.nz_reward,
+        usd_equivalent: earlyEnding.usd_equivalent,
+        destiny_title: earlyEnding.title
+      };
+      setGameResult(result);
+      setIsGameComplete(true);
+      setShowResultModal(true);
+      
+      // Mettre à jour le profil
+      if (result.isWinner) {
+        const updatedProfile = { ...userProfile };
+        updatedProfile.nzimbu_balance += result.nzimbu_reward;
+        updatedProfile.has_played_today = true;
+        updateUserProfile(updatedProfile);
+      }
+      return;
+    }
+
+    // Vérifier si le jeu est terminé (nœud sans choix ou 30 étapes)
+    if ((currentStoryNode && currentStoryNode.choices.length === 0) || playerChoices.length >= 30) {
       setIsGameComplete(true);
       const result = RewardService.calculateGameResult(currentNode, userProfile, playerChoices);
       setGameResult(result);
+      setShowResultModal(true);
       
       // Ajouter les récompenses au profil
       if (result.isWinner) {
@@ -42,25 +69,6 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
         updatedProfile.nzimbu_balance += result.nzimbu_reward;
         updatedProfile.has_played_today = true;
         updateUserProfile(updatedProfile);
-        
-        if (result.usd_equivalent >= 1000) {
-          toast({
-            title: "🎉 JACKPOT ! 🎉",
-            description: `Tu es le ROI SUPRÊME ! Tu as gagné ${result.nzimbu_reward} Nz (${result.usd_equivalent} USD) !`,
-            duration: 10000
-          });
-        } else {
-          toast({
-            title: "Félicitations !",
-            description: `Tu as gagné ${result.nzimbu_reward} Nz (${result.usd_equivalent} USD) !`
-          });
-        }
-      } else {
-        toast({
-          title: "Fin tragique...",
-          description: `Ton parcours se termine sans récompense. Tente ta chance à nouveau !`,
-          variant: "destructive"
-        });
       }
     }
   }, [currentNode, currentStoryNode, playerChoices]);
@@ -119,6 +127,7 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
     setIsGameComplete(false);
     setGameResult(null);
     setPlayerChoices([]);
+    setShowResultModal(false);
     window.scrollTo(0, 0);
   };
 
@@ -381,6 +390,18 @@ const StoryPage: React.FC<StoryPageProps> = ({ onBack }) => {
             <p className="text-amber-700 font-serif">Le destin se tisse...</p>
           </div>
         </motion.div>
+      )}
+
+      {/* Modal des résultats */}
+      {gameResult && (
+        <GameResultModal
+          isOpen={showResultModal}
+          onClose={() => setShowResultModal(false)}
+          gameResult={gameResult}
+          playerChoices={playerChoices}
+          onRestart={handleRestart}
+          onBackToMenu={onBack}
+        />
       )}
     </div>
   );

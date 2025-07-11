@@ -1,210 +1,204 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Crown, ShoppingBag, User, Scroll, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useGame } from '@/contexts/GameContext';
 import StoryPage from '@/components/StoryPage';
-import KingPage from '@/components/KingPage';
 import ShopPage from '@/components/ShopPage';
 import CharacterPage from '@/components/CharacterPage';
-
-type CurrentPage = 'home' | 'story' | 'king' | 'shop' | 'character' | 'rules' | 'settings';
+import KingPage from '@/components/KingPage';
+import RulesPage from '@/components/RulesPage';
+import SettingsPage from '@/components/SettingsPage';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Crown, User, ShoppingBag, BookOpen, Trophy, Settings, HelpCircle } from 'lucide-react';
 
 const Index = () => {
-  const [bookOpened, setBookOpened] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const [currentPage, setCurrentPage] = useState<CurrentPage>('home');
+  const [currentPage, setCurrentPage] = useState<'menu' | 'story' | 'shop' | 'character' | 'king' | 'rules' | 'settings'>('menu');
+  const { userProfile, dailyWinner } = useGame();
 
-  useEffect(() => {
-    if (currentPage === 'home') {
-      // Animation d'ouverture automatique après 2 secondes
-      const timer = setTimeout(() => {
-        setBookOpened(true);
-        setTimeout(() => setShowMenu(true), 1000);
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [currentPage]);
-
-  const handleNavigation = (page: CurrentPage) => {
-    setCurrentPage(page);
+  const navigateToPage = (page: typeof currentPage) => {
     console.log(`Navigation vers: ${page}`);
+    setCurrentPage(page);
   };
 
-  const handleBackToHome = () => {
-    setCurrentPage('home');
-    setBookOpened(false);
-    setShowMenu(false);
-    // Relancer l'animation d'ouverture
-    setTimeout(() => {
-      setBookOpened(true);
-      setTimeout(() => setShowMenu(true), 1000);
-    }, 100);
-  };
-
-  // Render des pages spécifiques
   if (currentPage === 'story') {
-    return <StoryPage onBack={handleBackToHome} />;
+    return <StoryPage onBack={() => setCurrentPage('menu')} />;
   }
-  
-  if (currentPage === 'king') {
-    return <KingPage onBack={handleBackToHome} />;
-  }
-  
+
   if (currentPage === 'shop') {
-    return <ShopPage onBack={handleBackToHome} />;
+    return <ShopPage onBack={() => setCurrentPage('menu')} />;
   }
-  
+
   if (currentPage === 'character') {
-    return <CharacterPage onBack={handleBackToHome} />;
+    return <CharacterPage onBack={() => setCurrentPage('menu')} />;
   }
 
-  // Page temporaire pour les sections non implémentées
-  if (currentPage === 'rules' || currentPage === 'settings') {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-amber-800 mb-4">
-            {currentPage === 'rules' ? 'Règles & Récompenses' : 'Paramètres'}
-          </h1>
-          <p className="text-amber-600 mb-6">Cette section sera bientôt disponible.</p>
-          <Button onClick={handleBackToHome} className="bg-amber-600 hover:bg-amber-700">
-            Retour au menu principal
-          </Button>
-        </div>
-      </div>
-    );
+  if (currentPage === 'king') {
+    return <KingPage onBack={() => setCurrentPage('menu')} />;
   }
 
-  const menuItems = [
-    { icon: BookOpen, title: "Jouer ta destinée", subtitle: "Découvre l'histoire du jour", page: 'story' as CurrentPage },
-    { icon: Crown, title: "Roi du jour", subtitle: "Vois qui règne aujourd'hui", page: 'king' as CurrentPage },
-    { icon: ShoppingBag, title: "Formation & Boutique", subtitle: "Améliore tes compétences", page: 'shop' as CurrentPage },
-    { icon: User, title: "Mon personnage", subtitle: "Stats et progression", page: 'character' as CurrentPage },
-    { icon: Scroll, title: "Règles & Récompenses", subtitle: "Comment devenir roi", page: 'rules' as CurrentPage },
-    { icon: Settings, title: "Paramètres", subtitle: "Configuration", page: 'settings' as CurrentPage }
-  ];
+  if (currentPage === 'rules') {
+    return <RulesPage onBack={() => setCurrentPage('menu')} />;
+  }
+
+  if (currentPage === 'settings') {
+    return <SettingsPage onBack={() => setCurrentPage('menu')} />;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 flex flex-col items-center justify-center p-4">
-      {/* Animation d'ouverture du livre */}
-      <motion.div
-        className="relative"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.5 }}
-      >
-        {/* Couverture du livre */}
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header avec titre du jeu */}
         <motion.div
-          className="relative w-80 h-96 bg-gradient-to-br from-amber-800 to-amber-900 rounded-lg shadow-2xl border-4 border-amber-700"
-          animate={{
-            rotateY: bookOpened ? -20 : 0,
-            transformStyle: "preserve-3d"
-          }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
         >
-          {/* Titre sur la couverture */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-            <motion.h1 
-              className="text-3xl font-bold text-amber-100 mb-4 font-serif"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: bookOpened ? 0 : 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              Ubuntara
-            </motion.h1>
-            <motion.h2 
-              className="text-lg text-amber-200 font-serif"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: bookOpened ? 0 : 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              Le Trône du Destin
-            </motion.h2>
-            
-            {/* Décoration africaine */}
-            <motion.div 
-              className="absolute top-4 left-4 w-8 h-8 border-2 border-amber-300 rounded-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: bookOpened ? 0 : 1 }}
-            />
-            <motion.div 
-              className="absolute bottom-4 right-4 w-6 h-6 border-2 border-amber-300 rotate-45"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: bookOpened ? 0 : 1 }}
-            />
-          </div>
-        </motion.div>
-
-        {/* Page intérieure avec le menu */}
-        <motion.div
-          className="absolute top-0 left-0 w-80 h-96 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg shadow-xl"
-          initial={{ opacity: 0, rotateY: 0 }}
-          animate={{ 
-            opacity: bookOpened ? 1 : 0,
-            rotateY: bookOpened ? 20 : 0 
-          }}
-          transition={{ duration: 1.5, delay: 0.5 }}
-        >
-          {showMenu && (
-            <motion.div
-              className="p-6 h-full overflow-y-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h2 className="text-2xl font-bold text-amber-800 mb-6 text-center font-serif">
-                Ton Destin t'Attend
-              </h2>
-              
-              <div className="space-y-3">
-                {menuItems.map((item, index) => (
-                  <motion.div
-                    key={item.title}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <Button
-                      variant="ghost"
-                      className="w-full h-auto p-3 bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border border-amber-300 rounded-lg text-left transition-all duration-300 hover:shadow-md"
-                      onClick={() => handleNavigation(item.page)}
-                    >
-                      <div className="flex items-center space-x-3 w-full">
-                        <item.icon className="h-6 w-6 text-amber-700 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-amber-800 text-sm">
-                            {item.title}
-                          </div>
-                          <div className="text-xs text-amber-600 truncate">
-                            {item.subtitle}
-                          </div>
-                        </div>
-                      </div>
-                    </Button>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-      </motion.div>
-
-      {/* Citation inspirante en bas */}
-      {showMenu && (
-        <motion.div
-          className="mt-8 text-center max-w-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.5 }}
-        >
-          <p className="text-sm text-amber-700 italic font-serif">
-            "Ubuntu signifie qu'une personne est une personne à travers d'autres personnes."
+          <h1 className="text-6xl font-bold text-amber-800 mb-2 font-serif">
+            UBUNTARA
+          </h1>
+          <p className="text-xl text-amber-600 italic">
+            L'aventure de ton destin commence ici
           </p>
-          <p className="text-xs text-amber-600 mt-1">- Proverbe africain</p>
         </motion.div>
-      )}
+
+        {/* Roi du jour */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="bg-white/80 border-amber-200">
+            <CardHeader>
+              <CardTitle className="flex items-center text-amber-800">
+                <Crown className="h-5 w-5 mr-2" />
+                Roi du Jour
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {dailyWinner.username === "Personne" ? (
+                <p className="text-amber-700">
+                  Personne n'a encore réclamé le trône aujourd'hui. Tente ta chance !
+                </p>
+              ) : (
+                <p className="text-amber-700">
+                  Félicitations à <span className="font-semibold">{dailyWinner.username}</span>,
+                  notre roi actuel !
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Menu principal */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-gradient-to-br from-amber-100 to-orange-100"
+              onClick={() => navigateToPage('story')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center text-amber-800">
+                  <BookOpen className="h-6 w-6 mr-3" />
+                  Commencer l'Aventure
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-amber-700">
+                  {userProfile.has_played_today 
+                    ? "Reprendre ton parcours épique vers la royauté !"
+                    : "Débute ton voyage vers le trône et découvre ton destin !"
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-green-200 bg-gradient-to-br from-green-100 to-lime-100"
+              onClick={() => navigateToPage('shop')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-800">
+                  <ShoppingBag className="h-6 w-6 mr-3" />
+                  Visiter la Boutique
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-green-700">
+                  Améliore tes stats et prépare-toi pour les défis à venir !
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-blue-200 bg-gradient-to-br from-blue-100 to-sky-100"
+              onClick={() => navigateToPage('rules')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center text-blue-800">
+                  <HelpCircle className="h-6 w-6 mr-3" />
+                  Règles & Récompenses
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-blue-700">
+                  Découvre comment jouer et les récompenses qui t'attendent !
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.0 }}
+          >
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-gray-200 bg-gradient-to-br from-gray-100 to-slate-100"
+              onClick={() => navigateToPage('settings')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center text-gray-800">
+                  <Settings className="h-6 w-6 mr-3" />
+                  Paramètres
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700">
+                  Personnalise ton expérience de jeu selon tes préférences.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Footer */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="text-center mt-8 text-amber-700"
+        >
+          <p>
+            Ubuntara - L'aventure de ta vie. Deviens le roi de ton destin !
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 };
