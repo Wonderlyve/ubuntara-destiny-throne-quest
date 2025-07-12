@@ -62,10 +62,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background relative overflow-hidden">
-      {/* Background audio */}
+      {/* Background audio - Utilisation du fichier local pour l'écran d'accueil */}
       <audio
         ref={audioRef}
-        src="https://cdn.pixabay.com/audio/2024/10/23/audio_b7c56b5ff4.mp3"
+        src="/music/african-tribal-music-342635.mp3"
         preload="auto"
       />
 

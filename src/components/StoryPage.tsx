@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/contexts/GameContext';
 import { GameService } from '@/services/gameService';
 import GameResultModal from '@/components/GameResultModal';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Menu, Crown, Coins, Heart, Zap, Shield, Star } from 'lucide-react';
+import { ArrowLeft, Menu, Crown, Coins, Heart, Zap, Shield, Star, Volume2, VolumeX } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface StoryPageProps {
@@ -82,8 +82,27 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
   const [loading, setLoading] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
+    // Démarrer la musique d'aventure
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.loop = true;
+      
+      const playMusic = async () => {
+        try {
+          await audioRef.current?.play();
+          setIsMusicPlaying(true);
+        } catch (error) {
+          console.log('Auto-play prevented by browser');
+        }
+      };
+      
+      playMusic();
+    }
+
     const fetchStory = async () => {
       try {
         const storyData = GameService.getStoryData();
@@ -115,6 +134,17 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
 
     fetchStory();
   }, [userProfile.daily_progress.current_node]);
+
+  const toggleMusic = () => {
+    if (audioRef.current) {
+      if (isMusicPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsMusicPlaying(!isMusicPlaying);
+    }
+  };
 
   const handleChoice = async (choice: Choice) => {
     if (loading) return;
@@ -187,6 +217,13 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background relative overflow-hidden">
+      {/* Background audio - Utilisation du fichier local pour l'aventure */}
+      <audio
+        ref={audioRef}
+        src="/music/congoville-3-247729.mp3"
+        preload="auto"
+      />
+
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-32 h-32 gaming-gradient-purple rounded-full opacity-10 floating-animation" />
@@ -223,8 +260,22 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
           </Button>
         </div>
 
-        {/* Player stats */}
         <div className="flex items-center space-x-3">
+          {/* Music control button */}
+          <motion.button
+            onClick={toggleMusic}
+            className="gaming-card bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur p-2 rounded-full border border-purple-400/30 hover:scale-110 transition-transform"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isMusicPlaying ? (
+              <Volume2 className="h-4 w-4 text-purple-300" />
+            ) : (
+              <VolumeX className="h-4 w-4 text-gray-400" />
+            )}
+          </motion.button>
+
+          {/* Player stats */}
           <div className="flex items-center space-x-2 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 backdrop-blur px-3 py-1 rounded-full border border-yellow-400/30">
             <Coins className="h-4 w-4 text-yellow-400" />
             <span className="text-yellow-400 font-bold text-sm">{userProfile.nzimbu_balance} Nz</span>
@@ -252,8 +303,8 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Story content card */}
-            <Card className="gaming-card gaming-gradient-dark border-purple-400/30 mb-8 p-8">
+            {/* Story content card with purple glow */}
+            <Card className="gaming-card gaming-gradient-dark border-purple-400/30 mb-8 p-8 shadow-[0_0_50px_rgba(168,85,247,0.3)]">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -264,7 +315,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
                 </h2>
                 
                 <div className="prose prose-lg max-w-none text-white/90 leading-relaxed">
-                  <p className="text-lg whitespace-pre-line">
+                  <p className="text-lg whitespace-pre-line text-shadow-lg" style={{ textShadow: '0 0 20px rgba(168, 85, 247, 0.5)' }}>
                     {currentNode.story}
                   </p>
                 </div>
@@ -332,17 +383,17 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
                       <Button
                         onClick={() => handleChoice(choice)}
                         disabled={loading}
-                        className="w-full p-6 text-left gaming-btn gaming-gradient-purple text-white text-xl font-bold py-6 px-12 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[4rem] text-wrap"
+                        className="w-full p-4 text-left gaming-btn gaming-gradient-purple text-white text-base font-bold py-4 px-6 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[3.5rem] text-wrap leading-tight"
                       >
                         <div className="flex items-start space-x-3">
-                          <span className="flex-shrink-0 w-8 h-8 bg-purple-400/30 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                          <span className="flex-shrink-0 w-6 h-6 bg-purple-400/30 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                             {String.fromCharCode(65 + index)}
                           </span>
-                          <span className="flex-1 leading-relaxed break-words">
+                          <span className="flex-1 leading-snug break-words text-sm">
                             {choice.text}
                           </span>
                           {choice.requirements && (
-                            <div className="flex-shrink-0 flex space-x-1 mt-1">
+                            <div className="flex-shrink-0 flex space-x-1 mt-0.5">
                               {choice.requirements.nzimbu && (
                                 <span className="flex items-center space-x-1 text-xs bg-yellow-400/20 px-2 py-1 rounded">
                                   <Coins className="h-3 w-3" />
