@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/contexts/GameContext';
-import { gameService } from '@/services/gameService';
+import { GameService } from '@/services/gameService';
 import GameResultModal from '@/components/GameResultModal';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -58,16 +59,15 @@ interface GameResult {
 
 const choiceVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: (index: number) => ({
-    opacity: 1,
+  visible: { 
+    opacity: 1, 
     y: 0,
     transition: {
-      delay: 0.1 * index,
       duration: 0.4,
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
-    },
-  }),
+    }
+  },
   hover: {
     scale: 1.02,
     backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -77,7 +77,7 @@ const choiceVariants = {
 };
 
 const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
-  const { userProfile, setUserProfile } = useGame();
+  const { userProfile } = useGame();
   const [currentNode, setCurrentNode] = useState<StoryNode>({ id: 1, story: "Chargement de l'histoire..." });
   const [loading, setLoading] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
@@ -86,9 +86,23 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
   useEffect(() => {
     const fetchStory = async () => {
       try {
-        const storyData = await gameService.getStory(userProfile.id);
-        setCurrentNode(storyData.current_node);
-        setUserProfile(storyData.user_profile);
+        const storyData = GameService.getStoryData();
+        const currentNodeData = storyData.nodes[userProfile.daily_progress.current_node];
+        if (currentNodeData) {
+          setCurrentNode({
+            id: parseInt(userProfile.daily_progress.current_node),
+            title: currentNodeData.title,
+            story: currentNodeData.text,
+            choices: currentNodeData.choices?.map(choice => ({
+              text: choice.text,
+              next_node_id: parseInt(choice.next),
+              requirements: choice.requirements ? {
+                nzimbu: choice.requirements.fortune,
+                energy: choice.requirements.force
+              } : undefined
+            }))
+          });
+        }
       } catch (error) {
         console.error("Erreur lors du chargement de l'histoire:", error);
         toast({
@@ -100,7 +114,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
     };
 
     fetchStory();
-  }, [setUserProfile, userProfile.id]);
+  }, [userProfile.daily_progress.current_node]);
 
   const handleChoice = async (choice: Choice) => {
     if (loading) return;
@@ -116,7 +130,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
         setLoading(false);
         return;
       }
-      if (choice.requirements.energy && userProfile.energy < choice.requirements.energy) {
+      if (choice.requirements.energy && userProfile.stats.force < choice.requirements.energy) {
         toast({
           title: "Pas assez d'énergie",
           description: "Tu n'as pas assez d'énergie pour faire ce choix.",
@@ -127,26 +141,38 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
     }
 
     try {
-      const result = await gameService.makeChoice(userProfile.id, choice.next_node_id);
+      // Update daily progress
+      GameService.updateDailyProgress(choice.next_node_id.toString(), choice.text);
       
-      // Mise à jour de l'état du jeu avec les résultats
-      setUserProfile(prevProfile => ({
-        ...prevProfile,
-        ...result.user_profile,
-      }));
+      // Get the next node
+      const storyData = GameService.getStoryData();
+      const nextNodeData = storyData.nodes[choice.next_node_id.toString()];
       
-      // Afficher les récompenses ou les conséquences du choix
+      if (nextNodeData) {
+        setCurrentNode({
+          id: choice.next_node_id,
+          title: nextNodeData.title,
+          story: nextNodeData.text,
+          choices: nextNodeData.choices?.map(nextChoice => ({
+            text: nextChoice.text,
+            next_node_id: parseInt(nextChoice.next),
+            requirements: nextChoice.requirements ? {
+              nzimbu: nextChoice.requirements.fortune,
+              energy: nextChoice.requirements.force
+            } : undefined
+          }))
+        });
+      }
+
+      // Show result if needed
       if (choice.success_result || choice.failure_result) {
         setGameResult({
-          success: result.success,
-          message: result.success ? choice.success_result || "Succès!" : choice.failure_result || "Échec!",
-          rewards: result.success ? choice.success_rewards : choice.failure_rewards,
+          success: true, // For now, always success
+          message: choice.success_result || "Choix effectué!",
+          rewards: choice.success_rewards,
         });
         setShowResultModal(true);
       }
-
-      // Passage au nœud suivant
-      setCurrentNode(result.current_node);
     } catch (error: any) {
       console.error("Erreur lors du choix:", error);
       toast({
@@ -206,20 +232,18 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
           
           <div className="flex items-center space-x-2 bg-gradient-to-r from-red-400/20 to-pink-400/20 backdrop-blur px-3 py-1 rounded-full border border-red-400/30">
             <Heart className="h-4 w-4 text-red-400" />
-            <span className="text-red-400 font-bold text-sm">{userProfile.health}</span>
+            <span className="text-red-400 font-bold text-sm">{userProfile.stats.force}</span>
           </div>
           
           <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 backdrop-blur px-3 py-1 rounded-full border border-blue-400/30">
             <Zap className="h-4 w-4 text-blue-400" />
-            <span className="text-blue-400 font-bold text-sm">{userProfile.energy}</span>
+            <span className="text-blue-400 font-bold text-sm">{userProfile.stats.esprit}</span>
           </div>
         </div>
       </motion.div>
 
       {/* Main content */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
-        
-        
         <AnimatePresence mode="wait">
           <motion.div
             key={currentNode.id}
@@ -301,9 +325,9 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
                       variants={choiceVariants}
                       initial="hidden"
                       animate="visible"
-                      custom={index}
                       whileHover="hover"
                       whileTap="tap"
+                      transition={{ delay: 0.1 * index }}
                     >
                       <Button
                         onClick={() => handleChoice(choice)}
@@ -350,14 +374,20 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
       </div>
 
       {/* Game Result Modal */}
-      <GameResultModal
-        isOpen={showResultModal}
-        onClose={() => {
-          setShowResultModal(false);
-          onBack();
-        }}
-        result={gameResult}
-      />
+      {showResultModal && gameResult && (
+        <GameResultModal
+          isOpen={showResultModal}
+          onClose={() => {
+            setShowResultModal(false);
+          }}
+          result={{
+            isWinner: gameResult.success,
+            nzimbu_reward: gameResult.rewards?.nzimbu || 0,
+            usd_equivalent: 0,
+            destiny_title: gameResult.message
+          }}
+        />
+      )}
     </div>
   );
 };
