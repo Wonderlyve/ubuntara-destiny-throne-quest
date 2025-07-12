@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,11 @@ interface GameResultModalProps {
   onBackToMenu: () => void;
 }
 
+interface EncouragementMessage {
+  id: number;
+  message: string;
+}
+
 const GameResultModal: React.FC<GameResultModalProps> = ({
   isOpen,
   onClose,
@@ -23,6 +28,26 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
   onRestart,
   onBackToMenu
 }) => {
+  const [encouragementMessage, setEncouragementMessage] = useState<string>('');
+
+  useEffect(() => {
+    const fetchRandomEncouragement = async () => {
+      try {
+        const response = await fetch('/data/non_crowned_encouragements.json');
+        const messages: EncouragementMessage[] = await response.json();
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+        setEncouragementMessage(randomMessage.message);
+      } catch (error) {
+        console.error('Erreur lors du chargement des messages d\'encouragement:', error);
+        setEncouragementMessage('Ton parcours courageux mérite respect et admiration.');
+      }
+    };
+
+    if (isOpen && !gameResult.isWinner) {
+      fetchRandomEncouragement();
+    }
+  }, [isOpen, gameResult.isWinner]);
+
   const getResultIcon = () => {
     if (gameResult.usd_equivalent >= 1000) {
       return <Crown className="h-20 w-20 text-yellow-500 animate-pulse" />;
@@ -60,6 +85,13 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
   };
 
   const choicesSummary = getChoicesSummary();
+
+  // Fonction pour ajuster la taille de police en fonction de la longueur du texte
+  const getTextSizeClass = (text: string) => {
+    if (text.length > 120) return 'text-sm';
+    if (text.length > 80) return 'text-base';
+    return 'text-lg';
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -107,8 +139,8 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
                 transition={{ delay: 0.4 }}
                 className="text-center"
               >
-                <p className="text-lg text-white/90 italic font-normal leading-relaxed max-w-md mx-auto">
-                  {gameResult.destiny_title}
+                <p className={`${getTextSizeClass(gameResult.isWinner ? gameResult.destiny_title : encouragementMessage)} text-white/90 italic font-normal leading-relaxed max-w-md mx-auto px-4`}>
+                  {gameResult.isWinner ? gameResult.destiny_title : encouragementMessage}
                 </p>
                 {gameResult.usd_equivalent >= 1000 && (
                   <motion.div

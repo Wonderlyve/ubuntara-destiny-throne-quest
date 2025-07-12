@@ -14,8 +14,10 @@ const Index = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    // Reset scroll position when component mounts
-    window.scrollTo(0, 0);
+    // Reset scroll position to start when component mounts or when returning to home
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     
     if (audioRef.current) {
       audioRef.current.volume = 0.3;
@@ -33,7 +35,15 @@ const Index = () => {
       
       playMusic();
     }
-  }, []);
+
+    // Cleanup function to stop music when leaving home
+    return () => {
+      if (currentPage !== 'home' && audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, [currentPage]);
 
   const toggleMusic = () => {
     if (audioRef.current) {
@@ -49,9 +59,10 @@ const Index = () => {
   const startAdventure = () => {
     console.log('Démarrage de l\'aventure');
     
-    // Stop the startup music
+    // Stop the startup music immediately
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
       setIsMusicPlaying(false);
     }
     
@@ -64,7 +75,9 @@ const Index = () => {
 
   const handleBackToHome = () => {
     // Reset scroll position when returning to home
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     setCurrentPage('home');
     
     // Restart the home music

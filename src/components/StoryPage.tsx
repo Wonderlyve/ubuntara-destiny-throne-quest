@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/contexts/GameContext';
@@ -86,9 +85,21 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
   const [playerChoices, setPlayerChoices] = useState<number[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Fonction pour calculer intelligemment la taille de police des boutons de choix
+  const getChoiceTextSize = (text: string) => {
+    const length = text.length;
+    if (length > 200) return 'text-xs leading-tight';
+    if (length > 150) return 'text-sm leading-snug';
+    if (length > 100) return 'text-sm leading-normal';
+    if (length > 60) return 'text-base leading-normal';
+    return 'text-base leading-relaxed';
+  };
+
   useEffect(() => {
-    // Reset scroll position to top when component mounts
-    window.scrollTo(0, 0);
+    // Reset scroll position to start of page
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
     // Démarrer la musique d'aventure
     if (audioRef.current) {
@@ -142,6 +153,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.currentTime = 0;
       }
     };
   }, [userProfile.daily_progress.current_node]);
@@ -253,9 +265,10 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
   };
 
   const handleBackToHome = () => {
-    // Stop the adventure music
+    // Stop the adventure music immediately
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
     onBack();
   };
@@ -281,8 +294,8 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
         }))
       });
     }
-    // Scroll to top
-    window.scrollTo(0, 0);
+    // Scroll to top immediately
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
 
   return (
@@ -427,7 +440,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
               </motion.div>
             </Card>
 
-            {/* Choices */}
+            {/* Choices avec gestion intelligente de la taille de police */}
             {currentNode.choices && currentNode.choices.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -453,13 +466,13 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
                       <Button
                         onClick={() => handleChoice(choice, index)}
                         disabled={loading}
-                        className="w-full p-4 text-left gaming-btn gaming-gradient-purple text-white text-sm font-bold py-4 px-6 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[3.5rem] leading-tight"
+                        className={`w-full p-4 text-left gaming-btn gaming-gradient-purple text-white ${getChoiceTextSize(choice.text)} font-bold py-4 px-6 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[3.5rem]`}
                       >
                         <div className="flex items-start space-x-3">
                           <span className="flex-shrink-0 w-6 h-6 bg-purple-400/30 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                             {String.fromCharCode(65 + index)}
                           </span>
-                          <span className="flex-1 leading-snug break-words text-sm">
+                          <span className="flex-1 break-words">
                             {choice.text}
                           </span>
                           {choice.requirements && (
