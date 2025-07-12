@@ -17,6 +17,18 @@ const Index = () => {
     if (audioRef.current) {
       audioRef.current.volume = 0.3;
       audioRef.current.loop = true;
+      
+      // Démarrer automatiquement la musique
+      const playMusic = async () => {
+        try {
+          await audioRef.current?.play();
+          setIsMusicPlaying(true);
+        } catch (error) {
+          console.log('Auto-play prevented by browser');
+        }
+      };
+      
+      playMusic();
     }
   }, []);
 

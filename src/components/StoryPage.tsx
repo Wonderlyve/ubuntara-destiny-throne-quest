@@ -332,12 +332,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
                       <Button
                         onClick={() => handleChoice(choice)}
                         disabled={loading}
-                        className={`
-                          w-full p-6 text-left gaming-btn gaming-gradient-purple 
-                          text-white font-medium border-2 border-purple-400/50 
-                          hover:border-purple-300 transition-all duration-300 
-                          hover:scale-102 neon-glow min-h-[4rem] text-wrap
-                        `}
+                        className="w-full p-6 text-left gaming-btn gaming-gradient-purple text-white text-xl font-bold py-6 px-12 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[4rem] text-wrap"
                       >
                         <div className="flex items-start space-x-3">
                           <span className="flex-shrink-0 w-8 h-8 bg-purple-400/30 rounded-full flex items-center justify-center text-sm font-bold mt-1">
@@ -380,12 +375,10 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
           onClose={() => {
             setShowResultModal(false);
           }}
-          result={{
-            isWinner: gameResult.success,
-            nzimbu_reward: gameResult.rewards?.nzimbu || 0,
-            usd_equivalent: 0,
-            destiny_title: gameResult.message
-          }}
+          isWinner={gameResult.success}
+          nzimbu_reward={gameResult.rewards?.nzimbu || 0}
+          usd_equivalent={0}
+          destiny_title={gameResult.message}
         />
       )}
     </div>
