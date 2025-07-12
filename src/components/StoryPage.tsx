@@ -83,9 +83,13 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [playerChoices, setPlayerChoices] = useState<number[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
+    // Reset scroll position to top when component mounts
+    window.scrollTo(0, 0);
+
     // Démarrer la musique d'aventure
     if (audioRef.current) {
       audioRef.current.volume = 0.3;
@@ -133,6 +137,13 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
     };
 
     fetchStory();
+
+    // Cleanup function to stop music when component unmounts
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
   }, [userProfile.daily_progress.current_node]);
 
   const toggleMusic = () => {
@@ -146,9 +157,12 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
     }
   };
 
-  const handleChoice = async (choice: Choice) => {
+  const handleChoice = async (choice: Choice, choiceIndex: number) => {
     if (loading) return;
     setLoading(true);
+
+    // Add choice to player choices
+    setPlayerChoices(prev => [...prev, choiceIndex]);
 
     // Vérifiez si l'utilisateur a les ressources nécessaires
     if (choice.requirements) {
@@ -194,14 +208,37 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
         });
       }
 
-      // Show result if needed
-      if (choice.success_result || choice.failure_result) {
+      // Check if game is over (no more choices or reached an ending)
+      if (!nextNodeData?.choices?.length || choice.next_node_id.toString().startsWith('end_')) {
+        // Calculate rewards based on choices made
+        const baseReward = Math.max(10, playerChoices.length * 5); // Minimum 10 Nz, 5 per choice
+        const totalReward = baseReward + (choice.success_rewards?.nzimbu || 0);
+        
         setGameResult({
-          success: true, // For now, always success
-          message: choice.success_result || "Choix effectué!",
-          rewards: choice.success_rewards,
+          success: choice.next_node_id.toString().includes('roi_supreme') || choice.next_node_id.toString().includes('winner'),
+          message: choice.success_result || nextNodeData?.title || "Fin de l'aventure",
+          rewards: {
+            nzimbu: totalReward,
+            ...choice.success_rewards
+          }
         });
         setShowResultModal(true);
+      }
+
+      // Show result if needed
+      if (choice.success_result || choice.failure_result) {
+        const baseReward = Math.max(10, playerChoices.length * 5);
+        setGameResult({
+          success: choice.success_result ? true : false,
+          message: choice.success_result || choice.failure_result || "Choix effectué!",
+          rewards: {
+            nzimbu: baseReward + (choice.success_rewards?.nzimbu || 0),
+            ...choice.success_rewards,
+          },
+        });
+        if (!nextNodeData?.choices?.length) {
+          setShowResultModal(true);
+        }
       }
     } catch (error: any) {
       console.error("Erreur lors du choix:", error);
@@ -213,6 +250,39 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBackToHome = () => {
+    // Stop the adventure music
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    onBack();
+  };
+
+  const handleRestart = () => {
+    setShowResultModal(false);
+    setPlayerChoices([]);
+    // Reset to initial state
+    const storyData = GameService.getStoryData();
+    const initialNodeData = storyData.nodes["1"];
+    if (initialNodeData) {
+      setCurrentNode({
+        id: 1,
+        title: initialNodeData.title,
+        story: initialNodeData.text,
+        choices: initialNodeData.choices?.map(choice => ({
+          text: choice.text,
+          next_node_id: parseInt(choice.next),
+          requirements: choice.requirements ? {
+            nzimbu: choice.requirements.fortune,
+            energy: choice.requirements.force
+          } : undefined
+        }))
+      });
+    }
+    // Scroll to top
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -240,7 +310,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
       >
         <div className="flex items-center space-x-3">
           <Button
-            onClick={onBack}
+            onClick={handleBackToHome}
             variant="ghost"
             size="sm"
             className="gaming-btn gaming-gradient-gray text-white hover:scale-105 transition-transform"
@@ -381,9 +451,9 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
                       transition={{ delay: 0.1 * index }}
                     >
                       <Button
-                        onClick={() => handleChoice(choice)}
+                        onClick={() => handleChoice(choice, index)}
                         disabled={loading}
-                        className="w-full p-4 text-left gaming-btn gaming-gradient-purple text-white text-base font-bold py-4 px-6 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[3.5rem] text-wrap leading-tight"
+                        className="w-full p-4 text-left gaming-btn gaming-gradient-purple text-white text-sm font-bold py-4 px-6 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[3.5rem] leading-tight"
                       >
                         <div className="flex items-start space-x-3">
                           <span className="flex-shrink-0 w-6 h-6 bg-purple-400/30 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
@@ -423,13 +493,16 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
       {showResultModal && gameResult && (
         <GameResultModal
           isOpen={showResultModal}
-          onClose={() => {
-            setShowResultModal(false);
+          onClose={() => setShowResultModal(false)}
+          gameResult={{
+            isWinner: gameResult.success,
+            nzimbu_reward: gameResult.rewards?.nzimbu || 0,
+            usd_equivalent: gameResult.success ? 1000 : 0,
+            destiny_title: gameResult.message
           }}
-          isWinner={gameResult.success}
-          nzimbu_reward={gameResult.rewards?.nzimbu || 0}
-          usd_equivalent={0}
-          destiny_title={gameResult.message}
+          playerChoices={playerChoices}
+          onRestart={handleRestart}
+          onBackToMenu={handleBackToHome}
         />
       )}
     </div>

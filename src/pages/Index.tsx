@@ -14,6 +14,9 @@ const Index = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
+    // Reset scroll position when component mounts
+    window.scrollTo(0, 0);
+    
     if (audioRef.current) {
       audioRef.current.volume = 0.3;
       audioRef.current.loop = true;
@@ -45,6 +48,13 @@ const Index = () => {
 
   const startAdventure = () => {
     console.log('Démarrage de l\'aventure');
+    
+    // Stop the startup music
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsMusicPlaying(false);
+    }
+    
     setCurrentPage('story');
   };
 
@@ -52,8 +62,21 @@ const Index = () => {
     setCurrentPage('menu');
   };
 
+  const handleBackToHome = () => {
+    // Reset scroll position when returning to home
+    window.scrollTo(0, 0);
+    setCurrentPage('home');
+    
+    // Restart the home music
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+      setIsMusicPlaying(true);
+    }
+  };
+
   if (currentPage === 'story') {
-    return <StoryPage onBack={() => setCurrentPage('home')} onMenu={openMenu} />;
+    return <StoryPage onBack={handleBackToHome} onMenu={openMenu} />;
   }
 
   if (currentPage === 'menu') {

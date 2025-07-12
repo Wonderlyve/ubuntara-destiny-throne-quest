@@ -29,14 +29,22 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
     } else if (gameResult.isWinner) {
       return <Trophy className="h-16 w-16 text-amber-500" />;
     } else {
-      return <Skull className="h-16 w-16 text-red-500" />;
+      return (
+        <div className="flex justify-center mb-6">
+          <img 
+            src="/lovable-uploads/62df8ffd-a0c4-4cf9-909b-056bf57fcd9e.png"
+            alt="Résultat du jeu"
+            className="w-64 h-64 object-cover rounded-2xl shadow-2xl neon-glow"
+          />
+        </div>
+      );
     }
   };
 
   const getResultColor = () => {
     if (gameResult.usd_equivalent >= 1000) return 'from-yellow-400 to-orange-500';
     if (gameResult.isWinner) return 'from-green-400 to-emerald-500'; 
-    return 'from-red-400 to-rose-500';
+    return 'from-purple-400 to-blue-500';
   };
 
   const getChoicesSummary = () => {
@@ -55,9 +63,9 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-background via-background/95 to-background border-purple-400/30">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl">
+          <DialogTitle className="text-center text-2xl text-white">
             Résultat Final
           </DialogTitle>
         </DialogHeader>
@@ -78,22 +86,35 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
                 transition={{ delay: 0.2, duration: 0.6 }}
                 className="flex justify-center"
               >
-                {getResultIcon()}
+                {gameResult.isWinner && gameResult.usd_equivalent >= 1000 ? (
+                  <Crown className="h-20 w-20 text-yellow-500 animate-pulse" />
+                ) : gameResult.isWinner ? (
+                  <Trophy className="h-16 w-16 text-amber-500" />
+                ) : (
+                  <img 
+                    src="/lovable-uploads/62df8ffd-a0c4-4cf9-909b-056bf57fcd9e.png"
+                    alt="Résultat du jeu"
+                    className="w-48 h-48 object-cover rounded-2xl shadow-2xl"
+                    style={{ boxShadow: '0 0 50px rgba(168, 85, 247, 0.3)' }}
+                  />
+                )}
               </motion.div>
 
-              {/* Titre du destin */}
+              {/* Message de résultat */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className={`text-center p-6 rounded-lg bg-gradient-to-r ${getResultColor()} text-white`}
+                className="text-center"
               >
-                <h2 className="text-3xl font-bold mb-2">{gameResult.destiny_title}</h2>
+                <p className="text-lg text-white/90 italic font-normal leading-relaxed max-w-md mx-auto">
+                  {gameResult.destiny_title}
+                </p>
                 {gameResult.usd_equivalent >= 1000 && (
                   <motion.div
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ repeat: Infinity, duration: 2 }}
-                    className="text-lg font-semibold"
+                    className="text-lg font-semibold text-yellow-400 mt-4"
                   >
                     🏆 ROI SUPRÊME 🏆
                   </motion.div>
@@ -105,89 +126,39 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="bg-amber-50 p-4 rounded-lg border border-amber-200"
+                className="bg-gradient-to-r from-amber-400/20 to-yellow-400/20 p-6 rounded-2xl border border-amber-400/30 backdrop-blur"
               >
                 <div className="flex items-center justify-center space-x-4">
-                  <Coins className="h-6 w-6 text-amber-600" />
+                  <Coins className="h-8 w-8 text-amber-400" />
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-amber-800">
-                      {gameResult.nzimbu_reward} Nz
+                    <div className="text-3xl font-bold text-amber-300">
+                      +{gameResult.nzimbu_reward} Nz
                     </div>
-                    <div className="text-sm text-amber-600">
-                      ${gameResult.usd_equivalent} USD
+                    <div className="text-sm text-amber-400 mt-1">
+                      Bonus pour tes choix courageux
                     </div>
+                    {gameResult.usd_equivalent > 0 && (
+                      <div className="text-sm text-amber-400">
+                        Équivalent: ${gameResult.usd_equivalent} USD
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
 
-              {/* Analyse du parcours */}
-              <motion.div
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="bg-blue-50 p-4 rounded-lg border border-blue-200"
-              >
-                <h3 className="font-semibold text-blue-800 mb-3 flex items-center">
-                  <Star className="h-5 w-5 mr-2" />
-                  Analyse de votre parcours
-                </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-blue-600">Décisions prises:</span>
-                    <span className="font-semibold ml-2">{choicesSummary.totalChoices}</span>
-                  </div>
-                  <div>
-                    <span className="text-blue-600">Choix audacieux:</span>
-                    <span className="font-semibold ml-2">{choicesSummary.boldChoices}</span>
-                  </div>
-                  <div>
-                    <span className="text-blue-600">Choix prudents:</span>
-                    <span className="font-semibold ml-2">{choicesSummary.cautiousChoices}</span>
-                  </div>
-                  <div>
-                    <span className="text-blue-600">Style moyen:</span>
-                    <span className="font-semibold ml-2">
-                      {parseFloat(choicesSummary.averageChoice) > 3.5 ? 'Audacieux' : 'Prudent'}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Description détaillée */}
-              <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 1.0 }}
-                className="bg-gray-50 p-4 rounded-lg border"
-              >
-                <p className="text-gray-700 leading-relaxed">
-                  {gameResult.isWinner 
-                    ? `Félicitations ! Votre parcours de ${choicesSummary.totalChoices} décisions vous a mené vers ${gameResult.destiny_title.toLowerCase()}. Vos choix ${parseFloat(choicesSummary.averageChoice) > 3.5 ? 'audacieux' : 'prudents'} ont payé.`
-                    : `Votre aventure se termine tragiquement. Malgré ${choicesSummary.totalChoices} décisions courageuses, le destin en a décidé autrement. Tentez votre chance à nouveau !`
-                  }
-                </p>
-              </motion.div>
-
-              {/* Boutons d'action */}
+              {/* Bouton pour recommencer */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="flex space-x-3 pt-4"
+                transition={{ delay: 0.8 }}
+                className="flex justify-center pt-4"
               >
                 <Button
                   onClick={onRestart}
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+                  className="gaming-btn gaming-gradient-purple text-white text-xl font-bold py-6 px-12 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow"
                 >
-                  <Zap className="h-4 w-4 mr-2" />
-                  Recommencer
-                </Button>
-                <Button
-                  onClick={onBackToMenu}
-                  variant="outline"
-                  className="flex-1 border-amber-300 text-amber-700 hover:bg-amber-100"
-                >
-                  Menu Principal
+                  <Zap className="h-5 w-5 mr-3" />
+                  Recommencer l'Aventure
                 </Button>
               </motion.div>
             </motion.div>
