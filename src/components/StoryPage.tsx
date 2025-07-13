@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Menu, Crown, Coins, Heart, Zap, Shield, Star, Volume2, VolumeX } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { shortenChoiceText } from '@/utils/textUtils';
 
 interface StoryPageProps {
   onBack: () => void;
@@ -84,16 +85,6 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [playerChoices, setPlayerChoices] = useState<number[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
-
-  // Fonction pour calculer intelligemment la taille de police des boutons de choix
-  const getChoiceTextSize = (text: string) => {
-    const length = text.length;
-    if (length > 200) return 'text-xs leading-tight';
-    if (length > 150) return 'text-sm leading-snug';
-    if (length > 100) return 'text-sm leading-normal';
-    if (length > 60) return 'text-base leading-normal';
-    return 'text-base leading-relaxed';
-  };
 
   useEffect(() => {
     // Reset scroll position to start of page
@@ -440,7 +431,7 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
               </motion.div>
             </Card>
 
-            {/* Choices avec gestion intelligente de la taille de police */}
+            {/* Choices avec textes raccourcis */}
             {currentNode.choices && currentNode.choices.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -466,14 +457,14 @@ const StoryPage = ({ onBack, onMenu }: StoryPageProps) => {
                       <Button
                         onClick={() => handleChoice(choice, index)}
                         disabled={loading}
-                        className={`w-full p-4 text-left gaming-btn gaming-gradient-purple text-white ${getChoiceTextSize(choice.text)} font-bold py-4 px-6 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[3.5rem]`}
+                        className="w-full p-4 text-left gaming-btn gaming-gradient-purple text-white text-sm font-bold py-4 px-6 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300 transition-all duration-300 hover:scale-105 neon-glow min-h-[3.5rem]"
                       >
                         <div className="flex items-start space-x-3">
                           <span className="flex-shrink-0 w-6 h-6 bg-purple-400/30 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                             {String.fromCharCode(65 + index)}
                           </span>
                           <span className="flex-1 break-words">
-                            {choice.text}
+                            {shortenChoiceText(choice.text, 30)}
                           </span>
                           {choice.requirements && (
                             <div className="flex-shrink-0 flex space-x-1 mt-0.5">

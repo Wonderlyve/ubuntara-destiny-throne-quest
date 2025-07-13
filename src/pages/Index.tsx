@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '@/contexts/GameContext';
@@ -10,8 +9,12 @@ import { Volume2, VolumeX } from 'lucide-react';
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<'home' | 'story' | 'menu'>('home');
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [typedText, setTypedText] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
   const { userProfile } = useGame();
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const gameDescription = "Bienvenue dans Ubuntara ! Incarne un héros africain et prends des décisions cruciales pour conquérir le trône. Chaque choix compte dans cette aventure épique !";
 
   useEffect(() => {
     // Reset scroll position to start when component mounts or when returning to home
@@ -36,14 +39,32 @@ const Index = () => {
       playMusic();
     }
 
+    // Typing effect
+    let index = 0;
+    const typingInterval = setInterval(() => {
+      if (index < gameDescription.length) {
+        setTypedText(gameDescription.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 50);
+
+    // Cursor blinking effect
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 500);
+
     // Cleanup function to stop music when leaving home
     return () => {
+      clearInterval(typingInterval);
+      clearInterval(cursorInterval);
       if (currentPage !== 'home' && audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
     };
-  }, [currentPage]);
+  }, [currentPage, gameDescription]);
 
   const toggleMusic = () => {
     if (audioRef.current) {
@@ -129,18 +150,33 @@ const Index = () => {
 
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="text-center max-w-md mx-auto">
-          {/* Game Cover */}
+          {/* Game Cover with Typing Text Overlay */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="mb-12"
+            className="mb-12 relative"
           >
             <img 
               src="/lovable-uploads/3d7c18a7-6e61-4af8-a6c9-b76cdbcd37e9.png" 
               alt="Ubuntara - Le Trône du Destin"
               className="w-full h-auto rounded-3xl shadow-2xl neon-glow floating-animation max-w-sm mx-auto"
             />
+            
+            {/* Typing Text Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-3xl backdrop-blur-sm"
+            >
+              <div className="text-center p-4 max-w-xs">
+                <p className="text-white text-sm leading-relaxed font-mono">
+                  {typedText}
+                  <span className={`inline-block w-0.5 h-4 bg-white ml-1 ${showCursor ? 'opacity-100' : 'opacity-0'}`} />
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
           
           {/* Start Adventure Button */}
