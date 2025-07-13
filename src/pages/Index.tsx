@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '@/contexts/GameContext';
@@ -11,6 +12,7 @@ const Index = () => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { userProfile } = useGame();
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -39,32 +41,37 @@ const Index = () => {
       playMusic();
     }
 
-    // Typing effect
-    let index = 0;
-    const typingInterval = setInterval(() => {
-      if (index < gameDescription.length) {
-        setTypedText(gameDescription.slice(0, index + 1));
-        index++;
-      } else {
-        clearInterval(typingInterval);
-      }
-    }, 50);
+    // Typing effect - only start when image is loaded
+    if (imageLoaded) {
+      let index = 0;
+      const typingInterval = setInterval(() => {
+        if (index < gameDescription.length) {
+          setTypedText(gameDescription.slice(0, index + 1));
+          index++;
+        } else {
+          clearInterval(typingInterval);
+        }
+      }, 80); // Reduced speed (was 50ms, now 80ms)
 
-    // Cursor blinking effect
-    const cursorInterval = setInterval(() => {
-      setShowCursor(prev => !prev);
-    }, 500);
+      // Cursor blinking effect
+      const cursorInterval = setInterval(() => {
+        setShowCursor(prev => !prev);
+      }, 500);
+
+      return () => {
+        clearInterval(typingInterval);
+        clearInterval(cursorInterval);
+      };
+    }
 
     // Cleanup function to stop music when leaving home
     return () => {
-      clearInterval(typingInterval);
-      clearInterval(cursorInterval);
       if (currentPage !== 'home' && audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
     };
-  }, [currentPage, gameDescription]);
+  }, [currentPage, gameDescription, imageLoaded]);
 
   const toggleMusic = () => {
     if (audioRef.current) {
@@ -161,22 +168,25 @@ const Index = () => {
               src="/lovable-uploads/3d7c18a7-6e61-4af8-a6c9-b76cdbcd37e9.png" 
               alt="Ubuntara - Le Trône du Destin"
               className="w-full h-auto rounded-3xl shadow-2xl neon-glow floating-animation max-w-sm mx-auto"
+              onLoad={() => setImageLoaded(true)}
             />
             
-            {/* Typing Text Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 0.5 }}
-              className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-3xl backdrop-blur-sm"
-            >
-              <div className="text-center p-4 max-w-xs">
-                <p className="text-white text-sm leading-relaxed font-mono">
-                  {typedText}
-                  <span className={`inline-block w-0.5 h-4 bg-white ml-1 ${showCursor ? 'opacity-100' : 'opacity-0'}`} />
-                </p>
-              </div>
-            </motion.div>
+            {/* Typing Text Overlay - Sans fond ni flou */}
+            {imageLoaded && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="absolute inset-0 flex items-center justify-center rounded-3xl"
+              >
+                <div className="text-center p-4 max-w-xs">
+                  <p className="text-white text-sm leading-relaxed font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-bold">
+                    {typedText}
+                    <span className={`inline-block w-0.5 h-4 bg-white ml-1 ${showCursor ? 'opacity-100' : 'opacity-0'}`} />
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
           
           {/* Start Adventure Button */}
